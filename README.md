@@ -48,5 +48,10 @@ emits intents. Game logic lives **only** in `sim/`. All tunable content lives in
   reset-to-Big-Bang, cycle counter. **MVP complete: a full
   grow → consume → upgrade → repeat loop.** Verified end-to-end.
 
-Milestones 5–10 (render, FX, content, offline, settings, leaderboard) per
+- **M5 (Render)** ✅ — Three.js semi-3D scene: central universe (particle cloud +
+  glowing core) that morphs per era, parallax starfields (3 layers), nebula haze,
+  the Attractor as dark negative-space at the edge, slow auto-orbit camera +
+  pointer parallax, and `UnrealBloom`. Bound to state; quality-scaled.
+
+Milestones 6–10 (Consume FX, content, offline, settings, leaderboard) per
 `CLAUDE.md` build order.

@@ -1,44 +1,77 @@
-// Three.js scene bootstrap (TECH_ARCHITECTURE §8, VISUAL_SPEC §1).
-// Milestone 1: a blank, correctly-sized, resizing canvas with the locked,
-// slow-orbit perspective camera and the near-black cosmic background.
-// Central object, parallax starfields, nebula, and bloom land in milestone 5.
-// Render reads state only — never game logic, never currency mutation.
+// Three.js scene orchestrator (TECH_ARCHITECTURE §8, VISUAL_SPEC §1).
+// Locked, slowly auto-orbiting perspective camera + pointer parallax; bloom via
+// EffectComposer. Drives the central universe, starfields, and the Attractor
+// from state each frame. Render reads state only — never game logic.
 
 import {
   Color,
   PerspectiveCamera,
   Scene,
+  Vector2,
   WebGLRenderer,
 } from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
+import { Universe } from "./universe.ts";
+import { Starfield } from "./particles.ts";
+import { Attractor } from "./attractor.ts";
 
 export interface SceneHandle {
   stop(): void;
+  /** Exposed so the Consume FX (M6) can drive the camera/universe/attractor. */
+  readonly universe: Universe;
+  readonly attractor: Attractor;
 }
+
+const BLOOM_BY_QUALITY = {
+  low: { strength: 0.6, radius: 0.3 },
+  medium: { strength: 0.8, radius: 0.4 },
+  high: { strength: 1.0, radius: 0.5 },
+} as const;
 
 export function initScene(
   canvas: HTMLCanvasElement,
-  _store: Store<GameState>,
+  store: Store<GameState>,
 ): SceneHandle {
-  const renderer = new WebGLRenderer({
-    canvas,
-    antialias: true,
-    powerPreference: "high-performance",
-  });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const quality = store.get().settings.quality;
+  const reducedMotionInitial = store.get().settings.reducedMotion;
+
+  const renderer = new WebGLRenderer({ canvas, antialias: quality !== "low", powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, quality === "high" ? 2 : 1.5));
 
   const scene = new Scene();
-  scene.background = new Color(0x05060a); // near-black, faint indigo
+  scene.background = new Color(0x05060a);
 
-  const camera = new PerspectiveCamera(50, 1, 0.1, 1000);
+  const camera = new PerspectiveCamera(50, 1, 0.1, 2000);
   camera.position.set(0, 0, 6);
-  camera.lookAt(0, 0, 0);
+
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloomCfg = BLOOM_BY_QUALITY[quality];
+  const bloom = new UnrealBloomPass(new Vector2(1, 1), bloomCfg.strength, bloomCfg.radius, 0.1);
+  composer.addPass(bloom);
+
+  const universe = new Universe(scene, quality);
+  const starfield = new Starfield(scene, quality);
+  const attractor = new Attractor(scene);
+
+  // Pointer parallax (normalized -1..1), eased toward the target each frame.
+  const pointerTarget = new Vector2(0, 0);
+  const pointer = new Vector2(0, 0);
+  function onPointerMove(e: PointerEvent): void {
+    pointerTarget.set((e.clientX / window.innerWidth) * 2 - 1, (e.clientY / window.innerHeight) * 2 - 1);
+  }
+  window.addEventListener("pointermove", onPointerMove);
 
   function resize(): void {
     const w = window.innerWidth;
     const h = window.innerHeight;
     renderer.setSize(w, h, false);
+    composer.setSize(w, h);
+    bloom.setSize(w, h);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
@@ -46,10 +79,31 @@ export function initScene(
   window.addEventListener("resize", resize);
 
   let raf = 0;
+  let last = performance.now();
+  let elapsed = 0;
 
-  function frame(): void {
-    // Milestone 5: compute dt here to drive central object + camera auto-orbit.
-    renderer.render(scene, camera);
+  function frame(now: number): void {
+    const dt = Math.min((now - last) / 1000, 0.1);
+    last = now;
+    elapsed += dt;
+
+    const state = store.get() as GameState;
+    const reducedMotion = state.settings.reducedMotion || reducedMotionInitial;
+
+    pointer.lerp(pointerTarget, 1 - Math.exp(-dt * 4));
+
+    // Slow auto-orbit + pointer parallax on the camera.
+    const orbit = reducedMotion ? 0 : Math.sin(elapsed * 0.05) * 0.6;
+    camera.position.x = Math.sin(orbit) * 6 + pointer.x * 0.6;
+    camera.position.y = pointer.y * -0.4;
+    camera.position.z = Math.cos(orbit) * 6;
+    camera.lookAt(0, 0, 0);
+
+    universe.update(state, dt, elapsed, reducedMotion);
+    starfield.update(dt, elapsed, pointer.x, pointer.y, reducedMotion);
+    attractor.update(state, dt);
+
+    composer.render();
     raf = requestAnimationFrame(frame);
   }
   raf = requestAnimationFrame(frame);
@@ -58,7 +112,11 @@ export function initScene(
     stop() {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("pointermove", onPointerMove);
+      composer.dispose();
       renderer.dispose();
     },
+    universe,
+    attractor,
   };
 }

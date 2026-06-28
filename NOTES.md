@@ -123,3 +123,36 @@ upgrades, `unlockedFacts`, cycle count, and settings persist.
   add one in polish if playtests want it.
 - Per-run upgrades (`data/upgrades.ts`) intentionally still empty; not required for
   MVP. Can be filled alongside M7 content.
+
+## Milestone 5 — Render
+
+**Status:** complete. Verified live (Stars era: cold-blue cloud + gold core;
+Life era: bioluminescent teal) — central object morphs by era, bloom glow,
+parallax starfields + nebula, HUD frames the canvas. No WebGL/console errors.
+
+### Structure
+- `render/scene.ts` — orchestrator: renderer, `EffectComposer` + `UnrealBloomPass`,
+  locked slow auto-orbit camera + eased pointer parallax, per-frame `update` of the
+  subsystems from `store.get()`. Returns a handle exposing `universe`/`attractor`
+  for the Consume FX (M6).
+- `render/universe.ts` — `Universe`: a fuzzy-sphere particle cloud + glow-sprite
+  core. Era visual params (color/radius/size/spin) per `TierVisualKey`, lerped each
+  frame for smooth morphs. Group scale is log-compressed from derived Scale so the
+  universe "fills" the frame as it grows.
+- `render/particles.ts` — `Starfield`: 3 Points layers (far/mid/near) with
+  parallax + slow spin, plus dim haze sprites for nebula.
+- `render/attractor.ts` — `Attractor`: dark void sprite (normal-blended negative
+  space) + faint additive rim at the lower-left edge; size grows with Entropy/cycle.
+  `bump()` reserved for the Consume FX.
+- `render/textures.ts` — procedural canvas gradient textures (glow/haze/void), no
+  asset files.
+
+### Notes / deviations
+- Imports use `three/examples/jsm/...` (has `@types/three` typings; `three/addons`
+  resolves to the same files but typings are less certain).
+- Three.js bundles to ~520 kB (gzip ~132 kB) → Vite's >500 kB chunk warning. Benign
+  for a single-page game; could code-split/manualChunks later if desired.
+- Particle counts and bloom strength scale with `settings.quality` at init; live
+  quality switching (rebuild) lands with M9 settings.
+- Nebula is lightweight haze sprites rather than a full fBm/curl-noise shader
+  (VISUAL_SPEC §5 ideal). Cheap and on-mood; can upgrade to a shader later.
