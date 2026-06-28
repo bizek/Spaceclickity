@@ -1,0 +1,207 @@
+/* Cold, scientific, restrained HUD over the WebGL canvas (VISUAL_SPEC §6–7).
+   Tabular-figure numerals so big numbers don't jitter. Heavy negative space. */
+
+:root {
+  --bg: #05060a;
+  --ink: #c9d4e3;
+  --ink-dim: #6c7891;
+  --panel: rgba(10, 14, 22, 0.55);
+  --panel-border: rgba(120, 140, 180, 0.18);
+  --accent: #7fe7d8; /* bioluminescent teal */
+  --consume: #b06a8a; /* the one "wrong" accent, reserved & ominous */
+  --mono: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+#scene {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+/* HUD overlay grid — frames the canvas, never covers the center. */
+#hud {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 2fr minmax(180px, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "top    top     top"
+    "left   center  right"
+    "cycle  center  consume";
+  gap: 16px;
+  padding: 16px;
+  pointer-events: none; /* let clicks fall through except on interactive bits */
+}
+
+#hud button,
+#hud .hud-panel,
+#hud .hud-cycle,
+#hud .hud-tap {
+  pointer-events: auto;
+}
+
+.hud-topbar {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.hud-entropy {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.hud-entity {
+  color: var(--ink-dim);
+  letter-spacing: 0.2em;
+  text-transform: lowercase;
+}
+
+.hud-settings {
+  background: none;
+  border: none;
+  color: var(--ink-dim);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.hud-tap {
+  grid-area: center;
+  align-self: end;
+  justify-self: center;
+  margin-bottom: 8px;
+  background: none;
+  border: 1px dashed var(--panel-border);
+  border-radius: 999px;
+  color: var(--ink-dim);
+  padding: 10px 22px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.hud-panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  align-self: start;
+  backdrop-filter: blur(2px);
+}
+
+.hud-left {
+  grid-area: left;
+}
+.hud-right {
+  grid-area: right;
+}
+
+.hud-panel-title {
+  margin: 0 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: var(--ink-dim);
+  font-weight: 600;
+}
+
+.tier-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tier-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.tier-row.is-locked {
+  color: var(--ink-dim);
+}
+
+.tier-status {
+  color: var(--ink-dim);
+  font-size: 11px;
+}
+
+.hud-readout {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+}
+
+.hud-stat-label {
+  color: var(--ink-dim);
+  font-size: 12px;
+}
+
+.hud-stat-value {
+  margin: 0;
+  text-align: right;
+  font-size: 14px;
+}
+
+.hud-cycle {
+  grid-area: cycle;
+  align-self: end;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.hud-consume {
+  grid-area: consume;
+  align-self: end;
+  justify-self: end;
+}
+
+.consume-button {
+  background: rgba(40, 18, 28, 0.6);
+  border: 1px solid var(--consume);
+  color: var(--consume);
+  border-radius: 8px;
+  padding: 14px 20px;
+  font-family: var(--mono);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.consume-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
