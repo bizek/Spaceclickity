@@ -5,12 +5,8 @@ export const balance = {
   /** Energy granted per active tap (before multipliers). */
   baseEnergyPerTap: 1,
 
-  /** First idle generator. Geometric cost: cost(n) = baseCost * costGrowth^n. */
-  generator: {
-    baseCost: 10,
-    costGrowth: 1.1,
-    baseProduction: 0.2,
-  },
+  // Generator curves live in data/generators.ts (one table per generator),
+  // mirroring how tier curves live in data/tiers.ts.
 
   /** Consume → Entropy prestige formula constants (BALANCING.md §6). */
   prestige: {

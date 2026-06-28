@@ -169,6 +169,54 @@ body {
   font-size: 14px;
 }
 
+.gen-panel {
+  margin-top: 14px;
+}
+
+.gen-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-top: 1px solid var(--panel-border);
+}
+
+.gen-name {
+  font-size: 13px;
+}
+
+.gen-count {
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.gen-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.gen-buy {
+  flex: 1;
+  background: rgba(20, 30, 44, 0.6);
+  border: 1px solid var(--panel-border);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.gen-buy:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.gen-buy:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .hud-cycle {
   grid-area: cycle;
   align-self: end;

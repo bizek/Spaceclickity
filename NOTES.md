@@ -26,3 +26,26 @@ Per CLAUDE.md "Definition of done": note deviations and the open decisions taken
 - `tiers.ts` unlock costs/weights are the BALANCING.md starting points, to be retuned.
 - Save format is versioned (`saveVersion: 1`) with a `runMigrations` scaffold ready
   for the first schema change.
+
+## Milestone 2 — State + sim core
+
+**Status:** complete. Verified live in-browser (tap → buy → idle accrual →
+localStorage persist → reload restores state), no console errors, type-checks clean.
+
+### Notes / deviations
+- **Generator curves moved to `data/generators.ts`** (one table per generator),
+  mirroring `data/tiers.ts`. Removed the illustrative `generator` block from
+  `balance.ts` to keep a single source per generator. `baseEnergyPerTap` stays in
+  `balance.ts` as a global constant.
+- Player intents live in `sim/actions.ts` (`tap`, `buyGenerator`, `costForN`,
+  `maxAffordable`); UI emits them through the store, never mutating currencies.
+- **Bulk buy is closed-form** (geometric series + log for max-affordable, no loops).
+  Validated numerically against a brute-force reference across owned/count/energy
+  ranges — exact match; `maxAffordable` always returns the largest affordable `k`.
+- Production applies a `tierMultiplier` (product of owned-tier `energyMult`) so M3
+  tier unlocks immediately boost both idle income and taps. Currently 1× (only
+  Quantum foam owned).
+- Offline/AFK catch-up still deferred to **M8** — the sim accumulator only catches
+  up within a live session, so reloads don't grant offline gains yet (no double-count).
+- `break_infinity.js` CJS require returns the constructor directly (no `.default`);
+  noted for any future Node-side tests/tooling.

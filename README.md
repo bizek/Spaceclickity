@@ -34,6 +34,10 @@ emits intents. Game logic lives **only** in `sim/`. All tunable content lives in
 
 ## Build status
 
-Milestone **1 (Scaffold)** complete — runnable shell: blank canvas + DOM HUD,
-empty reactive store, data-driven config, fixed-timestep sim loop (no-op),
-localStorage save/load. Milestones 2–10 per `CLAUDE.md` build order.
+- **M1 (Scaffold)** ✅ — runnable shell: blank canvas + DOM HUD, reactive store,
+  data-driven config, fixed-timestep sim loop, localStorage save/load.
+- **M2 (State + sim core)** ✅ — Energy taps, one idle generator with geometric
+  cost + closed-form bulk buy, FPS-independent production, autosave + load.
+  Verified end-to-end (tap → buy → idle accrual → persist → reload).
+
+Milestones 3–10 per `CLAUDE.md` build order.

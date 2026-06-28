@@ -2,12 +2,14 @@
 // Builds the HUD frame and mounts each panel. UI reads state & emits intents;
 // it never mutates currencies (CLAUDE.md: separation is sacred).
 
-import Decimal from "break_infinity.js";
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
 import { format } from "../util/format.ts";
 import { deriveNegentropy, deriveScale } from "../sim/derive.ts";
+import { energyPerSecond } from "../sim/production.ts";
+import { tap } from "../sim/actions.ts";
 import { mountTierPanel } from "./tierPanel.ts";
+import { mountGeneratorPanel } from "./generatorPanel.ts";
 import { mountUpgradePanel } from "./upgradePanel.ts";
 import { mountConsumeButton } from "./consumeButton.ts";
 import { mountCycleLog } from "./cycleLog.ts";
@@ -45,16 +47,20 @@ export function mountHud(root: HTMLElement, store: Store<GameState>): void {
   const readout = el("dl", "hud-readout");
   const scaleV = el("dd", "hud-stat-value");
   const energyV = el("dd", "hud-stat-value");
+  const rateV = el("dd", "hud-stat-value");
   const negV = el("dd", "hud-stat-value");
   readout.append(
     el("dt", "hud-stat-label", "Scale"),
     scaleV,
     el("dt", "hud-stat-label", "Energy"),
     energyV,
+    el("dt", "hud-stat-label", "Energy/s"),
+    rateV,
     el("dt", "hud-stat-label", "Negentropy"),
     negV,
   );
   rightPanel.append(readout);
+  mountGeneratorPanel(rightPanel, store);
   mountUpgradePanel(rightPanel, store);
 
   // --- Bottom-left: cycle count + fact-unlock progress ---
@@ -79,6 +85,7 @@ export function mountHud(root: HTMLElement, store: Store<GameState>): void {
     const notation = state.settings.notation;
     entropyReadout.textContent = `ENTROPY: ${format(state.entropy, notation)}`;
     energyV.textContent = format(state.energy, notation);
+    rateV.textContent = format(energyPerSecond(state as GameState), notation);
     scaleV.textContent = format(deriveScale(state as GameState), notation);
     negV.textContent = format(
       deriveNegentropy(state as GameState),
@@ -86,11 +93,8 @@ export function mountHud(root: HTMLElement, store: Store<GameState>): void {
     );
   });
 
-  // Scaffold tap intent: grants nothing yet (production lands in M2) but proves
-  // the UI→intent wiring. Mutation goes through the store, owned by sim later.
+  // Tap-to-channel: emit the tap intent; sim/ owns the actual Energy math.
   tapArea.addEventListener("click", () => {
-    store.update((state) => {
-      state.energy = state.energy.add(new Decimal(0));
-    });
+    store.update((state) => tap(state));
   });
 }
