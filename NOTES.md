@@ -334,3 +334,51 @@ HMR overhead, faster load. Same port 5173 so localStorage saves carry over.
 Verified: scene still renders correctly after trims; production preview serves 200.
 If still heavy on the user's machine, Settings → Quality → Low (PR 1, fewest
 particles, weakest bloom) is the fallback.
+
+---
+
+# EXPANSION — design docs in `docs/expansion/`
+
+A major expansion (passive trees + EVE/X4 command-console UI) was planned through the
+game-dev methodology. Locked direction: **aesthetic & UI only** (calm/AFK loop unchanged),
+**multiple themed "Discipline" trees**, nodes **spend Entropy directly** (the 3 prestige
+upgrades fold into tree roots), **design docs first**. Full spec set + build milestones
+E1–E6 in `docs/expansion/`. The expansion is a superset of the base game; sim/render/ui
+separation and the data-driven model are untouched.
+
+## Milestone E1 — Console shell (UI reskin)
+
+**Status:** complete. Verified live (seeded universe: 4 panels mount, live readouts, collapse
+persists, no console errors, type-checks clean). **Pure presentation — zero game-logic or
+save-schema change.**
+
+### Pieces
+- `ui/console/panel.ts` — reusable collapsible `createPanel({id,title})` framework. Collapse
+  state persists to its **own** localStorage key (`console.panels.v1`), keeping `GameState`
+  sim-only until the v4 schema lands in E3. a11y: title is a real `<button>` with
+  `aria-expanded`/`aria-label`.
+- `ui/console/frame.ts` — chrome layer (schematic grid, animated scanlines, 4 viewport corner
+  brackets). Inserted as a sibling **before** `#hud` (z-index: canvas → frame 1 → hud 2 → fx 50).
+  Subscribes to settings: `is-low` drops scanlines on Low quality, `is-reduced` freezes them on
+  reduced-motion (plus the `prefers-reduced-motion` media query).
+- `ui/hud.ts` — reworked into a **dock layout**: left dock (COMPLEXITY) + right dock stacking
+  READOUT / GENERATORS / ATTRACTOR, each wrapped in a console `Panel`. Center column stays clear
+  for the WebGL universe. All existing mount fns reused unchanged (they append into a panel body).
+- `generatorPanel.ts` / `prestigeUpgradePanel.ts` — dropped their internal `hud-panel-title`
+  h2 (the console Panel owns the title now); removed the now-unused `makeTitle` helper
+  (`noUnusedLocals`).
+- `style.css` — console tokens (`--console-grid/scan/bracket`, `--panel-bar`), the `.panel`
+  framework (title bar, caret, corner ticks, collapse), `.console-dock` (scrollable flex column),
+  and the `.console-frame` chrome.
+
+### Notes / deviations
+- **Screenshot caveat (tooling, not a bug):** the Preview MCP `preview_screenshot` times out
+  while the full-viewport scanline animation runs; pausing CSS animations lets the capture
+  succeed. The game itself runs clean at the 60-FPS cap. Verified layout via `preview_inspect`/
+  `preview_eval` + a paused-animation screenshot.
+- Collapse persistence is deliberately **outside** `GameState` (own localStorage key) to avoid a
+  schema bump in a pure-UI milestone; can migrate into `GameState.panelState` at E3 if desired.
+- No new panels yet: Telemetry/Survey are E2 (gated by Mind nodes), the Disciplines tree is E3.
+  E1 only restyles what exists into the console frame.
+- Old `.hud-panel`/`.hud-left`/`.hud-right` CSS rules are now dead (markup uses `.console-dock`)
+  but left in place; harmless. Can prune later.

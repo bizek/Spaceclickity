@@ -17,12 +17,9 @@ export function mountPrestigeUpgradePanel(
   parent: HTMLElement,
   store: Store<GameState>,
 ): void {
+  // Title ("ATTRACTOR") is owned by the enclosing console panel (see ui/hud.ts).
   const section = document.createElement("div");
   section.className = "prestige-panel";
-  const title = document.createElement("h2");
-  title.className = "hud-panel-title";
-  title.textContent = "ATTRACTOR";
-  section.append(title);
   parent.append(section);
 
   const rows: UpgradeRow[] = [];

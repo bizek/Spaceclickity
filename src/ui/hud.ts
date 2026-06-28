@@ -1,6 +1,7 @@
-// DOM overlay shell (VISUAL_SPEC §7). Cold, scientific, restrained.
-// Builds the HUD frame and mounts each panel. UI reads state & emits intents;
-// it never mutates currencies (CLAUDE.md: separation is sacred).
+// DOM overlay shell (VISUAL_SPEC §7 + Expansion E1 console reskin).
+// Cold, scientific, restrained — now framed as a multi-panel command console.
+// UI reads state & emits intents; it never mutates currencies (separation is
+// sacred). The center column is always left clear for the WebGL universe.
 
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
@@ -8,6 +9,8 @@ import { format } from "../util/format.ts";
 import { deriveNegentropy, deriveScale } from "../sim/derive.ts";
 import { energyPerSecond } from "../sim/production.ts";
 import { tap } from "../sim/actions.ts";
+import { createPanel } from "./console/panel.ts";
+import { mountConsoleFrame } from "./console/frame.ts";
 import { mountTierPanel } from "./tierPanel.ts";
 import { mountGeneratorPanel } from "./generatorPanel.ts";
 import { mountUpgradePanel } from "./upgradePanel.ts";
@@ -33,6 +36,11 @@ export function mountHud(
 ): void {
   root.innerHTML = "";
 
+  // --- Chrome layer: brackets, grid, scanlines. Behind the panels, above the
+  //     canvas, never interactive. Inserted as a sibling before #hud. ---
+  const frame = mountConsoleFrame(store);
+  root.parentElement?.insertBefore(frame, root);
+
   // --- Top bar: Entropy (meta hero) · entity name · settings ---
   const topBar = el("header", "hud-topbar");
   const entropyReadout = el("div", "hud-entropy");
@@ -47,14 +55,16 @@ export function mountHud(
   const tapArea = el("button", "hud-tap", "tap to channel Energy");
   tapArea.setAttribute("aria-label", "Channel Energy");
 
-  // --- Left: Complexity tier ladder ---
-  const leftPanel = el("section", "hud-panel hud-left");
-  leftPanel.append(el("h2", "hud-panel-title", "COMPLEXITY"));
-  mountTierPanel(leftPanel, store);
+  // --- Left dock: the Complexity ladder as a console subsystem panel ---
+  const leftDock = el("div", "console-dock console-left");
+  const complexity = createPanel({ id: "complexity", title: "COMPLEXITY" });
+  mountTierPanel(complexity.body, store);
+  leftDock.append(complexity.root);
 
-  // --- Right: in-run readout (Scale / Energy / Negentropy) + upgrades ---
-  const rightPanel = el("section", "hud-panel hud-right");
-  rightPanel.append(el("h2", "hud-panel-title", "READOUT"));
+  // --- Right dock: stacked readout / production / meta panels ---
+  const rightDock = el("div", "console-dock console-right");
+
+  const readoutPanel = createPanel({ id: "readout", title: "READOUT" });
   const readout = el("dl", "hud-readout");
   const scaleV = el("dd", "hud-stat-value");
   const energyV = el("dd", "hud-stat-value");
@@ -70,12 +80,17 @@ export function mountHud(
     el("dt", "hud-stat-label", "Negentropy"),
     negV,
   );
-  rightPanel.append(readout);
   const comparisonLine = el("p", "hud-comparison");
-  rightPanel.append(comparisonLine);
-  mountGeneratorPanel(rightPanel, store);
-  mountUpgradePanel(rightPanel, store);
-  mountPrestigeUpgradePanel(rightPanel, store);
+  readoutPanel.body.append(readout, comparisonLine);
+
+  const genPanel = createPanel({ id: "generators", title: "GENERATORS" });
+  mountGeneratorPanel(genPanel.body, store);
+  mountUpgradePanel(genPanel.body, store);
+
+  const attractorPanel = createPanel({ id: "attractor", title: "ATTRACTOR" });
+  mountPrestigeUpgradePanel(attractorPanel.body, store);
+
+  rightDock.append(readoutPanel.root, genPanel.root, attractorPanel.root);
 
   // --- Bottom-left: cycle count + fact-unlock progress ---
   const cycleArea = el("footer", "hud-cycle");
@@ -85,14 +100,7 @@ export function mountHud(
   const consumeArea = el("div", "hud-consume");
   mountConsumeButton(consumeArea, store, onConsume);
 
-  root.append(
-    topBar,
-    tapArea,
-    leftPanel,
-    rightPanel,
-    cycleArea,
-    consumeArea,
-  );
+  root.append(topBar, tapArea, leftDock, rightDock, cycleArea, consumeArea);
 
   // Quiet slide-in popups for fact unlocks + Scale comparisons.
   mountNotifications(store);

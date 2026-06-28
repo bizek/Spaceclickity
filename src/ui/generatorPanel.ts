@@ -17,9 +17,9 @@ interface GeneratorRow {
 }
 
 export function mountGeneratorPanel(parent: HTMLElement, store: Store<GameState>): void {
+  // Title is owned by the enclosing console panel (see ui/hud.ts).
   const section = document.createElement("div");
   section.className = "gen-panel";
-  section.append(makeTitle("GENERATORS"));
   parent.append(section);
 
   const rows: GeneratorRow[] = [];
@@ -83,11 +83,4 @@ export function mountGeneratorPanel(parent: HTMLElement, store: Store<GameState>
       row.buyMax.disabled = k <= 0;
     }
   });
-}
-
-function makeTitle(text: string): HTMLElement {
-  const h = document.createElement("h2");
-  h.className = "hud-panel-title";
-  h.textContent = text;
-  return h;
 }

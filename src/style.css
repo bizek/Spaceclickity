@@ -10,6 +10,13 @@
   --accent: #7fe7d8; /* bioluminescent teal */
   --consume: #b06a8a; /* the one "wrong" accent, reserved & ominous */
   --mono: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+
+  /* --- Command-console chrome (Expansion E1) --- */
+  --console-grid: rgba(120, 140, 180, 0.05); /* schematic grid lines */
+  --console-scan: rgba(127, 231, 216, 0.05); /* teal scanline ink */
+  --console-bracket: rgba(127, 231, 216, 0.32); /* corner brackets */
+  --panel-bar: rgba(127, 231, 216, 0.06); /* title-bar wash */
+  --readout-live: #9ef0e2; /* brighter "live" readout ink */
 }
 
 * {
@@ -50,23 +57,129 @@ body {
 #hud {
   position: fixed;
   inset: 0;
+  z-index: 2; /* above the chrome frame (z-index 1), below #fx (50) */
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) 2fr minmax(180px, 1fr);
+  grid-template-columns: minmax(210px, 0.95fr) 2.2fr minmax(230px, 1fr);
   grid-template-rows: auto 1fr auto;
   grid-template-areas:
     "top    top     top"
     "left   center  right"
     "cycle  center  consume";
-  gap: 16px;
-  padding: 16px;
+  gap: 14px;
+  padding: 14px;
   pointer-events: none; /* let clicks fall through except on interactive bits */
 }
 
 #hud button,
 #hud .hud-panel,
+#hud .panel,
+#hud .console-dock,
 #hud .hud-cycle,
 #hud .hud-tap {
   pointer-events: auto;
+}
+
+/* --- Console docks: stacked, collapsible panels along the edges. --- */
+.console-dock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--panel-border) transparent;
+}
+
+.console-left {
+  grid-area: left;
+}
+.console-right {
+  grid-area: right;
+}
+
+/* --- Console panel framework --- */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 7px;
+  backdrop-filter: blur(2px);
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* EVE-style corner ticks: top-left and bottom-right accent brackets. */
+.panel::before,
+.panel::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  pointer-events: none;
+}
+.panel::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid var(--console-bracket);
+  border-left: 1px solid var(--console-bracket);
+  border-top-left-radius: 7px;
+}
+.panel::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid var(--console-bracket);
+  border-right: 1px solid var(--console-bracket);
+  border-bottom-right-radius: 7px;
+}
+
+.panel-bar {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--panel-bar);
+  border-radius: 7px 7px 0 0;
+}
+
+.panel-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--ink-dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-align: left;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.panel-title:disabled {
+  cursor: default;
+}
+.panel-title:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.panel-caret {
+  color: var(--accent);
+  font-size: 9px;
+  transition: transform 0.15s;
+}
+.panel-caret::before {
+  content: "▾";
+}
+.panel.is-collapsed .panel-caret {
+  transform: rotate(-90deg);
+}
+
+.panel-body {
+  padding: 12px 14px;
+}
+.panel.is-collapsed .panel-body {
+  display: none;
 }
 
 .hud-topbar {
@@ -203,7 +316,7 @@ body {
 }
 
 .gen-panel {
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 .gen-row {
@@ -531,7 +644,7 @@ body {
 }
 
 .prestige-panel {
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 .prestige-row {
@@ -567,8 +680,94 @@ body {
   grid-area: buy;
 }
 
+/* --- Console chrome layer (ui/console/frame.ts) ---
+   Above the canvas, below the HUD panels, never interactive. */
+.console-frame {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cf-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--console-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--console-grid) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, transparent 35%, #000 100%);
+}
+
+.cf-scan {
+  position: absolute;
+  inset: -100% 0 0 0; /* extra height so the translate loop never shows a seam */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--console-scan) 0,
+    var(--console-scan) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  animation: cf-scan-move 8s linear infinite;
+  will-change: transform;
+}
+
+@keyframes cf-scan-move {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(50%);
+  }
+}
+
+/* Full-viewport corner brackets (the EVE "targeting" motif). */
+.cf-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 0 solid var(--console-bracket);
+}
+.cf-tl {
+  top: 7px;
+  left: 7px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+.cf-tr {
+  top: 7px;
+  right: 7px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+}
+.cf-bl {
+  bottom: 7px;
+  left: 7px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+.cf-br {
+  bottom: 7px;
+  right: 7px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+}
+
+/* Low quality drops the scanlines; reduced-motion freezes them. */
+.console-frame.is-low .cf-scan {
+  display: none;
+}
+.console-frame.is-reduced .cf-scan {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+  }
+  .cf-scan {
+    animation: none !important;
   }
 }
