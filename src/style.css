@@ -271,6 +271,50 @@ body {
   cursor: default;
 }
 
+.consume-gain {
+  margin-top: 6px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--consume);
+}
+
+.prestige-panel {
+  margin-top: 14px;
+}
+
+.prestige-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "name  level"
+    "desc  desc"
+    "buy   buy";
+  gap: 4px;
+  padding: 8px 0;
+  border-top: 1px solid var(--panel-border);
+}
+
+.prestige-name {
+  grid-area: name;
+  font-size: 13px;
+}
+
+.prestige-level {
+  grid-area: level;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.prestige-desc {
+  grid-area: desc;
+  font-size: 11px;
+  color: var(--ink-dim);
+}
+
+.prestige-row .gen-buy {
+  grid-area: buy;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

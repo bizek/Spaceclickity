@@ -11,6 +11,7 @@ import { tap } from "../sim/actions.ts";
 import { mountTierPanel } from "./tierPanel.ts";
 import { mountGeneratorPanel } from "./generatorPanel.ts";
 import { mountUpgradePanel } from "./upgradePanel.ts";
+import { mountPrestigeUpgradePanel } from "./prestigeUpgradePanel.ts";
 import { mountConsumeButton } from "./consumeButton.ts";
 import { mountCycleLog } from "./cycleLog.ts";
 
@@ -62,6 +63,7 @@ export function mountHud(root: HTMLElement, store: Store<GameState>): void {
   rightPanel.append(readout);
   mountGeneratorPanel(rightPanel, store);
   mountUpgradePanel(rightPanel, store);
+  mountPrestigeUpgradePanel(rightPanel, store);
 
   // --- Bottom-left: cycle count + fact-unlock progress ---
   const cycleArea = el("footer", "hud-cycle");

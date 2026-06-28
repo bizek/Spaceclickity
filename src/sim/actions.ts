@@ -7,14 +7,17 @@ import { generators, type GeneratorDef } from "../data/generators.ts";
 import { tiers, type TierDef } from "../data/tiers.ts";
 import type { GameState } from "../state/schema.ts";
 import { tierMultiplier } from "./production.ts";
+import { prestigeEnergyMultiplier, prestigeTierCostMultiplier } from "./prestige.ts";
 
 function findGenerator(id: string): GeneratorDef | undefined {
   return generators.find((g) => g.id === id);
 }
 
-/** Active tap: grant Energy, scaled by owned-tier multipliers so taps stay relevant. */
+/** Active tap: grant Energy, scaled by tier + permanent multipliers so taps stay relevant. */
 export function tap(state: GameState): void {
-  const gain = new Decimal(balance.baseEnergyPerTap).mul(tierMultiplier(state));
+  const gain = new Decimal(balance.baseEnergyPerTap)
+    .mul(tierMultiplier(state))
+    .mul(prestigeEnergyMultiplier(state));
   state.energy = state.energy.add(gain);
 }
 
@@ -77,12 +80,17 @@ export function nextUnlockableTier(state: GameState): TierDef | undefined {
   return undefined;
 }
 
+/** Tier unlock cost after permanent (Entropy) discounts. */
+export function effectiveUnlockCost(state: GameState, tier: TierDef): Decimal {
+  return new Decimal(tier.unlockCost).mul(prestigeTierCostMultiplier(state));
+}
+
 /** Climb the ladder: unlock the given tier if it's next and affordable. */
 export function unlockTier(state: GameState, tierId: string): boolean {
   const next = nextUnlockableTier(state);
   if (next === undefined || next.id !== tierId) return false;
 
-  const cost = new Decimal(next.unlockCost);
+  const cost = effectiveUnlockCost(state, next);
   if (state.energy.lt(cost)) return false;
 
   state.energy = state.energy.sub(cost);

@@ -86,3 +86,40 @@ revealed, fact-particles unlocked). Type-checks clean, no console errors.
   `reload()`, so `localStorage.clear()`/`removeItem` before a reload gets clobbered
   by the in-memory state. This is correct runtime behavior; for clean-slate testing
   seed the save and neutralize `setItem` before reloading. Not a game bug.
+
+## Milestone 4 — Prestige loop (MVP complete)
+
+**Status:** complete. MVP (milestones 1–4) is a fully playable
+grow → consume → upgrade → repeat loop. Verified live and against hand-calc.
+
+### Formula (BALANCING §6), implemented in `sim/prestige.ts`
+- `entropyGain = K · conversionMult · √(Negentropy / softcap)` (in-run DR)
+- `effectiveGain = entropyGain · 1 / (1 + totalEntropy/metaSoftcap)^p` (meta falloff)
+- Verified: a seeded ripe universe (Negentropy 242.80, Entropy 0) → gain 0.16,
+  exactly matching the formula with the §11 starting constants.
+
+### What Consume does
+Banks `effectiveGain` Entropy, increments `cycle`, and resets **per-run** state
+only (energy, generators, tierLevels→quantum-foam, upgrades). Entropy, prestige
+upgrades, `unlockedFacts`, cycle count, and settings persist.
+
+### Permanent (Entropy) upgrades (`data/prestigeUpgrades.ts`, first pass)
+- **Deepening Hunger** — energyMult ×1.5/level (applied in `production` + taps).
+- **Wider Maw** — conversion (K) ×1.25/level (applied in `previewEntropyGain`).
+- **Entropic Erosion** — tier unlock cost ×0.9/level (applied via
+  `effectiveUnlockCost`, shown discounted in the tier panel).
+- Verified: buying Deepening Hunger took Energy/s 12.88K→19.32K (×1.5) and
+  persisted through a Consume.
+
+### Notes / deviations
+- New UI: `ui/prestigeUpgradePanel.ts` ("ATTRACTOR" panel) mounted in the right
+  column; Consume button shows live preview gain.
+- Module deps stay acyclic: `production`→`prestige`→`derive`→`data`;
+  `actions`→{`production`,`prestige`}. No cycles.
+- Consuming a *fresh* universe yields a trivial ~0.01 Entropy (Negentropy floor of
+  1 from owning Quantum foam). Harmless — DR makes looping empty universes
+  pointless — but the audit may want a minimum-ripeness gate on the button.
+- No confirmation dialog on Consume yet (it's the core idle prestige action);
+  add one in polish if playtests want it.
+- Per-run upgrades (`data/upgrades.ts`) intentionally still empty; not required for
+  MVP. Can be filled alongside M7 content.

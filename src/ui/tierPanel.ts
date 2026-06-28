@@ -1,9 +1,8 @@
 // Complexity tier ladder panel (VISUAL_SPEC §7). Buy / owned / locked states.
 // UI reads state & emits the unlock intent; sim/ owns the Energy math.
 
-import Decimal from "break_infinity.js";
 import { tiers } from "../data/tiers.ts";
-import { nextUnlockableTier, unlockTier } from "../sim/actions.ts";
+import { effectiveUnlockCost, nextUnlockableTier, unlockTier } from "../sim/actions.ts";
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
 import { format } from "../util/format.ts";
@@ -55,7 +54,7 @@ export function mountTierPanel(parent: HTMLElement, store: Store<GameState>): vo
         continue;
       }
       if (isNext) {
-        const cost = new Decimal(next.unlockCost);
+        const cost = effectiveUnlockCost(state, next);
         const btn = document.createElement("button");
         btn.className = "tier-buy";
         btn.textContent = `unlock — ${format(cost, notation)}`;

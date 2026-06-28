@@ -9,6 +9,7 @@ import Decimal from "break_infinity.js";
 import { generators } from "../data/generators.ts";
 import { tiers } from "../data/tiers.ts";
 import type { GameState } from "../state/schema.ts";
+import { prestigeEnergyMultiplier } from "./prestige.ts";
 
 /** Product of energyMult across every owned tier. Forward-compatible with M3. */
 export function tierMultiplier(state: GameState): Decimal {
@@ -30,7 +31,9 @@ export function energyPerSecond(state: GameState): Decimal {
     perUnitTotal = perUnitTotal.add(new Decimal(def.baseProduction).mul(count));
   }
   if (perUnitTotal.eq(0)) return perUnitTotal;
-  return perUnitTotal.mul(tierMultiplier(state));
+  return perUnitTotal
+    .mul(tierMultiplier(state))
+    .mul(prestigeEnergyMultiplier(state));
 }
 
 /**

@@ -43,5 +43,10 @@ emits intents. Game logic lives **only** in `sim/`. All tunable content lives in
   `tiers.ts`, one generator per tier, derived **Scale** + **Negentropy** that
   grow as you climb. Playable: tap → buy generators → unlock tiers → watch the
   universe grow. Tier→fact-unlock wiring in place.
+- **M4 (Prestige loop)** ✅ — **Consume → Entropy** (sqrt prestige + meta
+  falloff), permanent Entropy upgrades that accelerate the next run,
+  reset-to-Big-Bang, cycle counter. **MVP complete: a full
+  grow → consume → upgrade → repeat loop.** Verified end-to-end.
 
-Milestones 4–10 per `CLAUDE.md` build order.
+Milestones 5–10 (render, FX, content, offline, settings, leaderboard) per
+`CLAUDE.md` build order.
