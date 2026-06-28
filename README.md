@@ -63,4 +63,7 @@ emits intents. Game logic lives **only** in `sim/`. All tunable content lives in
   re-readable cycle log (redacted until observed), and sound hooks (subtle WebAudio
   cues, off by default).
 
-Milestones 8–10 (offline, settings, leaderboard) per `CLAUDE.md` build order.
+- **M8 (Offline progress)** ✅ — timestamp catch-up on load at 100% efficiency,
+  capped at 12h, with an eerie "the Attractor was patient" AFK summary popup.
+
+Milestones 9–10 (settings, leaderboard) per `CLAUDE.md` build order.

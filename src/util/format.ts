@@ -30,6 +30,17 @@ function formatScientific(value: Decimal): string {
   return `${mantissa.toFixed(2)}e${exp}`;
 }
 
+/** Human duration like "3h 12m" / "5m 02s" / "8s" from a seconds count. */
+export function formatDuration(totalSeconds: number): string {
+  const s = Math.floor(totalSeconds);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${sec.toString().padStart(2, "0")}s`;
+  return `${sec}s`;
+}
+
 function formatSuffix(value: Decimal): string {
   const exp = value.exponent;
   const group = Math.floor(exp / 3);

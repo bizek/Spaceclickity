@@ -11,10 +11,23 @@ import type { Store } from "../state/store.ts";
 
 const factById = new Map(facts.map((f) => [f.id, f]));
 
+let sharedContainer: HTMLElement | null = null;
+function getContainer(): HTMLElement {
+  if (sharedContainer === null) {
+    sharedContainer = document.createElement("div");
+    sharedContainer.className = "popups";
+    document.body.append(sharedContainer);
+  }
+  return sharedContainer;
+}
+
+/** Show a one-off popup (used for offline-progress and the like). */
+export function notify(kind: string, title: string, body: string): void {
+  showPopup(getContainer(), kind, title, body);
+}
+
 export function mountNotifications(store: Store<GameState>): void {
-  const container = document.createElement("div");
-  container.className = "popups";
-  document.body.append(container);
+  const container = getContainer();
 
   let seenFacts: Set<string> | null = null;
   let prevComparison = -2;

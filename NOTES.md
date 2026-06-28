@@ -213,3 +213,29 @@ unlocked facts + 10 redacted entries with the correct tally.
 - Per-run upgrades (`data/upgrades.ts`) still intentionally empty (optional content).
 - Audio default-off means the cue paths are exercised only once enabled; verified
   the hook call sites, not audible output.
+
+## Milestone 8 — Offline / AFK progress
+
+**Status:** complete. Verified live: a save 1h old granted exactly 46.37M Energy
+(= rate 12.88K/s × 3600) with popup "Away 1h 0m…"; a 100h-old save clamped to 12h
+→ 556.42M with the "(the Attractor was patient only so long)" tail.
+
+### Implementation
+- `sim/offline.ts applyOfflineProgress(state, now)` — `elapsed = now − lastSaved`,
+  clamped to `balance.offline.capHours` (12h), `gained = rate × seconds ×
+  efficiency` (100%). Stamps `lastSaved = now`. Returns `{seconds, gained, capped}`
+  or null.
+- `main.ts` runs it right after load (before subscribers mount) so the first paint
+  already reflects the catch-up, then shows the AFK popup via `notify(...)`.
+- `ui/notifications.ts` now exposes `notify()` + a shared lazy popup container.
+- `util/format.ts formatDuration()` for "Xh Ym" style.
+
+### Notes
+- No double-count: offline runs once on load; the live sim accumulator starts from
+  `performance.now()` at boot, independent of `lastSaved`.
+- The `offlineBoost` prestige effect type exists but no upgrade uses it yet; offline
+  efficiency is the flat `balance.offline.efficiency`. Easy to add later.
+- **Testing caveat:** seeding a past `lastSaved` then reloading repeatedly while
+  `setItem` is locked re-applies the grant each reload (lastSaved never persists),
+  which inflated an intermediate reading during development. A single clean load
+  grants exactly once (verified).

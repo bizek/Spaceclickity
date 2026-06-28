@@ -9,7 +9,10 @@ import { loadGame, saveGame } from "./util/save.ts";
 import { startSimulation } from "./sim/tick.ts";
 import { initScene } from "./render/scene.ts";
 import { consume, previewEntropyGain } from "./sim/prestige.ts";
+import { applyOfflineProgress } from "./sim/offline.ts";
 import { mountHud } from "./ui/hud.ts";
+import { notify } from "./ui/notifications.ts";
+import { format, formatDuration } from "./util/format.ts";
 
 function bootstrap(): void {
   const canvas = document.querySelector<HTMLCanvasElement>("#scene");
@@ -20,6 +23,10 @@ function bootstrap(): void {
 
   // GAME STATE — single source of truth.
   const store = new Store<GameState>(loadGame());
+
+  // OFFLINE PROGRESS — fast-forward production for time away, before anything
+  // subscribes so the first render already reflects the catch-up.
+  const offline = applyOfflineProgress(store.get() as GameState);
 
   // SIMULATION — fixed-timestep, FPS-independent.
   startSimulation(store);
@@ -45,6 +52,17 @@ function bootstrap(): void {
 
   // UI — DOM overlay shell; subscribes to state, emits intents.
   mountHud(hudRoot, store, requestConsume);
+
+  // Eerie AFK summary — "the Attractor was patient."
+  if (offline !== null && offline.gained.gt(0)) {
+    const notation = store.get().settings.notation;
+    const tail = offline.capped ? " (the Attractor was patient only so long)" : "";
+    notify(
+      "AFK",
+      "The Attractor was patient",
+      `Away ${formatDuration(offline.seconds)}. The universe yielded ${format(offline.gained, notation)} Energy${tail}.`,
+    );
+  }
 
   // PERSISTENCE — autosave on interval and on key lifecycle events.
   setInterval(() => {
