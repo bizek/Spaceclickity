@@ -14,6 +14,7 @@ import { mountHud } from "./ui/hud.ts";
 import { notify } from "./ui/notifications.ts";
 import { format, formatDuration } from "./util/format.ts";
 import { audio } from "./services/audio.ts";
+import { leaderboard } from "./services/leaderboard.ts";
 
 function bootstrap(): void {
   const canvas = document.querySelector<HTMLCanvasElement>("#scene");
@@ -65,6 +66,7 @@ function bootstrap(): void {
         s.seenConsumeFX = true;
       });
       saveGame(store.get() as GameState); // persist on this key event
+      void leaderboard.submitScore(store.get().entropy.toString());
     }, skip);
   }
 
@@ -82,12 +84,16 @@ function bootstrap(): void {
     );
   }
 
+  // Submit the starting standing (covers offline gains / first load).
+  void leaderboard.submitScore(store.get().entropy.toString());
+
   // PERSISTENCE — autosave on interval and on key lifecycle events.
   setInterval(() => {
     store.update((state) => {
       state.lastSaved = Date.now();
     });
     saveGame(store.get() as GameState);
+    void leaderboard.submitScore(store.get().entropy.toString());
   }, balance.autosaveIntervalMs);
 
   document.addEventListener("visibilitychange", () => {

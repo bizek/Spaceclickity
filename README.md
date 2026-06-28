@@ -69,5 +69,10 @@ emits intents. Game logic lives **only** in `sim/`. All tunable content lives in
 - **M9 (Settings & a11y)** ✅ — settings modal: quality (live scene rebuild),
   reduced-motion, number-format & sound toggles, skip-Consume-FX, instability
   (opt-in), export/import save, and a confirm-gated reset. Save schema v3.
+- **M10 (Leaderboard)** ✅ — pluggable `Leaderboard` interface, local-only default
+  that persists the best total Entropy; submitted on load/autosave/Consume; the
+  standing surfaces in the cycle log. A networked impl can swap behind the interface.
 
-Milestone 10 (leaderboard) per `CLAUDE.md` build order.
+**All 10 milestones complete.** Fully playable: grow → consume → upgrade → repeat,
+with semi-3D visuals, the devour animation, content/juice, offline progress,
+settings/a11y, and a local leaderboard.

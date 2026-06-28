@@ -265,3 +265,39 @@ quality persist; export decodes to v3; v2→v3 migration backfills `sound`.
 - Import/reset use `location.reload()` after persisting so the scene and audio
   re-init cleanly from the new state.
 - Settings persist immediately on change (`saveGame` in `setSetting`).
+
+## Milestone 10 — Leaderboard (optional, pluggable)
+
+**Status:** complete (local-only, as defaulted). Verified live: on-load submit
+wrote the leaderboard key (best=5,000,000); the cycle log shows
+"The Attractor's vastness (Entropy): …"; after a lower-Entropy run the standing
+appended "— best 5.00M" (records persist independently of resets).
+
+### Implementation
+- `services/leaderboard.ts` — `Leaderboard` interface (`submitScore`, `getGlobal`,
+  `getFriends`) + `localLeaderboard` default that persists the best total Entropy in
+  its own localStorage key. Exported `leaderboard` binding is the swap point for a
+  networked impl (treat client scores as untrusted server-side — v1 limitation).
+- `main.ts` submits on load, on each autosave tick, and inside the Consume
+  `onApply`.
+- `ui/cycleLog.ts` shows the standing; appends the local best when it exceeds the
+  current total.
+
+### Notes / deviations
+- "Global"/"friends" are local in v1 (getFriends returns []). The networked backend
+  is intentionally out of scope per TECH_ARCHITECTURE §7 / open decision (local-only).
+- Secondary boards (peak Scale, most universes consumed) are not implemented; the
+  interface/storage can be extended without touching callers.
+
+---
+
+## Project status: all 10 milestones complete
+
+The game is feature-complete against the four specs and CLAUDE.md build order.
+Outstanding follow-ups for the audit (all noted above):
+- Balance pass toward BALANCING §9 pacing targets (curves are first-pass).
+- Optional: minimum-ripeness gate on Consume (currently a fresh universe yields a
+  trivial ~0.01 Entropy — harmless due to diminishing returns).
+- Optional: per-run upgrades (`data/upgrades.ts` is an empty, wired stub).
+- Optional: instability hard-mode mechanic (toggle persists; no gameplay effect yet).
+- Optional: networked leaderboard; nebula fBm shader; code-splitting the Three.js chunk.

@@ -4,8 +4,11 @@
 import { comparisonIndexFor, comparisons } from "../data/comparisons.ts";
 import { facts } from "../data/facts.ts";
 import { deriveScale } from "../sim/derive.ts";
+import { leaderboard } from "../services/leaderboard.ts";
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
+import { format } from "../util/format.ts";
+import Decimal from "break_infinity.js";
 
 export function mountCycleLog(parent: HTMLElement, store: Store<GameState>): void {
   const button = document.createElement("button");
@@ -68,6 +71,19 @@ function buildLogOverlay(store: Store<GameState>): {
     tally.className = "log-tally";
     tally.textContent = `Universes consumed: ${state.cycle - 1}. Currently growing cycle ${state.cycle}.`;
     panel.append(tally);
+
+    // Standing — total Entropy (the Attractor's vastness). Local leaderboard.
+    const standing = document.createElement("p");
+    standing.className = "log-tally";
+    const notation = state.settings.notation;
+    standing.textContent = `The Attractor's vastness (Entropy): ${format(state.entropy, notation)}`;
+    panel.append(standing);
+    void leaderboard.getGlobal().then((board) => {
+      const best = board[0];
+      if (best !== undefined && new Decimal(best.entropy).gt(state.entropy)) {
+        standing.textContent += ` — best ${format(new Decimal(best.entropy), notation)}`;
+      }
+    });
 
     const ci = comparisonIndexFor(deriveScale(state as GameState).toNumber());
     if (ci >= 0) {
