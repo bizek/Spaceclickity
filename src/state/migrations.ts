@@ -7,8 +7,13 @@ type Migration = (save: SerializedGameState) => SerializedGameState;
 
 /** Keyed by the version being migrated FROM. */
 const migrations: Record<number, Migration> = {
-  // 0 -> 1: example slot; no-op for the initial schema.
-  // 0: (save) => ({ ...save, saveVersion: 1 }),
+  // 1 -> 2: add Consume-FX fields (M6).
+  1: (save) => ({
+    ...save,
+    saveVersion: 2,
+    seenConsumeFX: save.seenConsumeFX ?? false,
+    settings: { ...save.settings, skipConsumeFX: save.settings?.skipConsumeFX ?? false },
+  }),
 };
 
 export function runMigrations(save: SerializedGameState): SerializedGameState {

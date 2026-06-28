@@ -1,12 +1,16 @@
 // The Consume button (VISUAL_SPEC §7) — weighty, slightly ominous.
 // Shows the Entropy a Consume would yield; emits the consume intent.
 
-import { consume, previewEntropyGain } from "../sim/prestige.ts";
+import { previewEntropyGain } from "../sim/prestige.ts";
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
 import { format } from "../util/format.ts";
 
-export function mountConsumeButton(parent: HTMLElement, store: Store<GameState>): void {
+export function mountConsumeButton(
+  parent: HTMLElement,
+  store: Store<GameState>,
+  onConsume: () => void,
+): void {
   const btn = document.createElement("button");
   btn.className = "consume-button";
   parent.append(btn);
@@ -15,9 +19,8 @@ export function mountConsumeButton(parent: HTMLElement, store: Store<GameState>)
   gainLine.className = "consume-gain";
   parent.append(gainLine);
 
-  btn.addEventListener("click", () => {
-    store.update((s) => void consume(s));
-  });
+  // Emit the consume intent; main.ts plays the FX and applies the prestige.
+  btn.addEventListener("click", () => onConsume());
 
   store.subscribe((state) => {
     const gain = previewEntropyGain(state as GameState);

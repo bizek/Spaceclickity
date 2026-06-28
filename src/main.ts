@@ -8,6 +8,7 @@ import type { GameState } from "./state/schema.ts";
 import { loadGame, saveGame } from "./util/save.ts";
 import { startSimulation } from "./sim/tick.ts";
 import { initScene } from "./render/scene.ts";
+import { consume, previewEntropyGain } from "./sim/prestige.ts";
 import { mountHud } from "./ui/hud.ts";
 
 function bootstrap(): void {
@@ -23,11 +24,27 @@ function bootstrap(): void {
   // SIMULATION — fixed-timestep, FPS-independent.
   startSimulation(store);
 
-  // RENDER — blank canvas for now; reads state only.
-  initScene(canvas, store);
+  // RENDER — Three.js scene; reads state only.
+  const scene = initScene(canvas, store);
+
+  // Consume intent: play the devour FX, then apply the prestige under cover of
+  // the fade. Skippable after the first viewing if the player opts in.
+  function requestConsume(): void {
+    if (scene.isConsuming()) return;
+    const state = store.get() as GameState;
+    if (previewEntropyGain(state).lte(0)) return;
+    const skip = state.settings.skipConsumeFX && state.seenConsumeFX;
+    scene.playConsume(() => {
+      store.update((s) => {
+        consume(s);
+        s.seenConsumeFX = true;
+      });
+      saveGame(store.get() as GameState); // persist on this key event
+    }, skip);
+  }
 
   // UI — DOM overlay shell; subscribes to state, emits intents.
-  mountHud(hudRoot, store);
+  mountHud(hudRoot, store, requestConsume);
 
   // PERSISTENCE — autosave on interval and on key lifecycle events.
   setInterval(() => {

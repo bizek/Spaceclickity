@@ -3,7 +3,7 @@
 
 import Decimal from "break_infinity.js";
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface GameState {
   saveVersion: number;
@@ -29,6 +29,8 @@ export interface GameState {
   cycle: number;
   /** Fact ids the player has unlocked. */
   unlockedFacts: string[];
+  /** Whether the player has watched at least one full Consume animation. */
+  seenConsumeFX: boolean;
 
   // --- Settings ---
   settings: {
@@ -36,6 +38,7 @@ export interface GameState {
     reducedMotion: boolean;
     notation: "scientific" | "suffix";
     instability: boolean; // opt-in hard mode, off by default
+    skipConsumeFX: boolean; // skip the devour animation after first viewing
   };
 
   // --- Bookkeeping ---
@@ -62,11 +65,13 @@ export function defaultGameState(): GameState {
     cycle: 1,
     // Quantum foam is "reached" at the Big Bang, so its fact starts unlocked.
     unlockedFacts: ["fact-quantum-foam"],
+    seenConsumeFX: false,
     settings: {
       quality: "high",
       reducedMotion: false,
       notation: "suffix",
       instability: false,
+      skipConsumeFX: false,
     },
     lastSaved: Date.now(),
   };

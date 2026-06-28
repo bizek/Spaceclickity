@@ -22,7 +22,11 @@ function el(tag: string, className: string, text?: string): HTMLElement {
   return node;
 }
 
-export function mountHud(root: HTMLElement, store: Store<GameState>): void {
+export function mountHud(
+  root: HTMLElement,
+  store: Store<GameState>,
+  onConsume: () => void,
+): void {
   root.innerHTML = "";
 
   // --- Top bar: Entropy (meta hero) · entity name · settings ---
@@ -71,7 +75,7 @@ export function mountHud(root: HTMLElement, store: Store<GameState>): void {
 
   // --- Bottom-right: the weighty Consume action ---
   const consumeArea = el("div", "hud-consume");
-  mountConsumeButton(consumeArea, store);
+  mountConsumeButton(consumeArea, store, onConsume);
 
   root.append(
     topBar,

@@ -156,3 +156,29 @@ parallax starfields + nebula, HUD frames the canvas. No WebGL/console errors.
   quality switching (rebuild) lands with M9 settings.
 - Nebula is lightweight haze sprites rather than a full fBm/curl-noise shader
   (VISUAL_SPEC §5 ideal). Cheap and on-mood; can upgrade to a shader later.
+
+## Milestone 6 — Consume FX
+
+**Status:** complete. Verified live: clicking Consume played the devour FX, then
+under the fade banked Entropy (100→100.17), advanced cycle (3→4), reset the run,
+set `seenConsumeFX`, and persisted. v1→v2 migration loaded with no errors.
+
+### How the action flows (keeps separation intact)
+UI emits a plain `onConsume` callback → `main.ts requestConsume()` reads the
+preview gain, then calls `scene.playConsume(onApply, skip)`. The render-owned
+`ConsumeFX` runs the timeline and, at the fade peak, invokes `onApply` which does
+the actual `store.update(consume)` (game logic stays in sim/). The FX owns the
+universe group transform while active; `scene` suppresses the normal universe
+update for that span and hands control back cleanly at the end.
+
+### Details
+- Timeline (~2.6s): stillness → pull toward Attractor (contract + spin up) →
+  collapse + `#fx` fade-to-black → state resets under cover + `attractor.bump()` →
+  fade lifts to reveal a new smaller spark. Camera leans in slightly.
+- `#fx` is a DOM black overlay (z-index above canvas, below nothing interactive);
+  its opacity is driven by `ConsumeFX`.
+- **Skip after first viewing:** `settings.skipConsumeFX` (default off) + persisted
+  `seenConsumeFX`. When both true, a 0.35s quick-fade path is used. Toggle UI is M9.
+- **Save schema v2:** added `seenConsumeFX` and `settings.skipConsumeFX`;
+  `migrations[1]` backfills both. Confirmed old v1 saves load fine.
+- Consume now also saves immediately (key event) in addition to the interval.

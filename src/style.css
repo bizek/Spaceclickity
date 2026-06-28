@@ -36,6 +36,16 @@ body {
   display: block;
 }
 
+/* Consume fade-to-black overlay (driven by render/consumeFX.ts). */
+#fx {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
 /* HUD overlay grid — frames the canvas, never covers the center. */
 #hud {
   position: fixed;

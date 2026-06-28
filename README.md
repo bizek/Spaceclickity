@@ -53,5 +53,10 @@ emits intents. Game logic lives **only** in `sim/`. All tunable content lives in
   the Attractor as dark negative-space at the edge, slow auto-orbit camera +
   pointer parallax, and `UnrealBloom`. Bound to state; quality-scaled.
 
-Milestones 6–10 (Consume FX, content, offline, settings, leaderboard) per
-`CLAUDE.md` build order.
+- **M6 (Consume FX)** ✅ — the signature devour animation: pull → collapse toward
+  the Attractor → fade-to-black (prestige applied under cover) → a new smaller
+  spark. The Attractor grows each cycle. Skippable after first viewing (setting).
+  Save schema v2 + migration.
+
+Milestones 7–10 (content, offline, settings, leaderboard) per `CLAUDE.md`
+build order.

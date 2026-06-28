@@ -18,12 +18,14 @@ import type { GameState } from "../state/schema.ts";
 import { Universe } from "./universe.ts";
 import { Starfield } from "./particles.ts";
 import { Attractor } from "./attractor.ts";
+import { ConsumeFX } from "./consumeFX.ts";
 
 export interface SceneHandle {
   stop(): void;
-  /** Exposed so the Consume FX (M6) can drive the camera/universe/attractor. */
-  readonly universe: Universe;
-  readonly attractor: Attractor;
+  /** Play the devour animation; `onApply` performs the actual prestige. */
+  playConsume(onApply: () => void, skip: boolean): void;
+  /** Whether a Consume animation is currently running. */
+  isConsuming(): boolean;
 }
 
 const BLOOM_BY_QUALITY = {
@@ -78,6 +80,9 @@ export function initScene(
   resize();
   window.addEventListener("resize", resize);
 
+  let activeFX: ConsumeFX | null = null;
+  const flashEl = document.getElementById("fx");
+
   let raf = 0;
   let last = performance.now();
   let elapsed = 0;
@@ -99,7 +104,12 @@ export function initScene(
     camera.position.z = Math.cos(orbit) * 6;
     camera.lookAt(0, 0, 0);
 
-    universe.update(state, dt, elapsed, reducedMotion);
+    // While the Consume FX runs it owns the universe group transform.
+    if (activeFX !== null) {
+      if (!activeFX.update(dt)) activeFX = null;
+    } else {
+      universe.update(state, dt, elapsed, reducedMotion);
+    }
     starfield.update(dt, elapsed, pointer.x, pointer.y, reducedMotion);
     attractor.update(state, dt);
 
@@ -116,7 +126,16 @@ export function initScene(
       composer.dispose();
       renderer.dispose();
     },
-    universe,
-    attractor,
+    playConsume(onApply: () => void, skip: boolean): void {
+      if (activeFX !== null) return;
+      if (flashEl === null) {
+        onApply();
+        return;
+      }
+      activeFX = new ConsumeFX(universe, attractor, camera, flashEl, onApply, skip);
+    },
+    isConsuming(): boolean {
+      return activeFX !== null;
+    },
   };
 }
