@@ -4,6 +4,7 @@
 import Decimal from "break_infinity.js";
 import { balance } from "../data/balance.ts";
 import { generators, type GeneratorDef } from "../data/generators.ts";
+import { tiers, type TierDef } from "../data/tiers.ts";
 import type { GameState } from "../state/schema.ts";
 import { tierMultiplier } from "./production.ts";
 
@@ -53,5 +54,43 @@ export function buyGenerator(state: GameState, id: string, count: number): boole
 
   state.energy = state.energy.sub(cost);
   state.generators[id] = owned + count;
+  return true;
+}
+
+function isTierUnlocked(state: GameState, tierId: string): boolean {
+  return (state.tierLevels[tierId] ?? 0) > 0;
+}
+
+/**
+ * The next tier the player can work toward: the first locked tier whose
+ * predecessor is unlocked. Returns undefined once the whole ladder is owned.
+ */
+export function nextUnlockableTier(state: GameState): TierDef | undefined {
+  for (let i = 0; i < tiers.length; i++) {
+    const tier = tiers[i];
+    if (tier === undefined || isTierUnlocked(state, tier.id)) continue;
+    const prev = tiers[i - 1];
+    if (i === 0 || (prev !== undefined && isTierUnlocked(state, prev.id))) {
+      return tier;
+    }
+  }
+  return undefined;
+}
+
+/** Climb the ladder: unlock the given tier if it's next and affordable. */
+export function unlockTier(state: GameState, tierId: string): boolean {
+  const next = nextUnlockableTier(state);
+  if (next === undefined || next.id !== tierId) return false;
+
+  const cost = new Decimal(next.unlockCost);
+  if (state.energy.lt(cost)) return false;
+
+  state.energy = state.energy.sub(cost);
+  state.tierLevels[tierId] = 1;
+
+  // Reaching a tier reveals its fact-unlock (popups arrive in M7).
+  if (!state.unlockedFacts.includes(next.factId)) {
+    state.unlockedFacts.push(next.factId);
+  }
   return true;
 }

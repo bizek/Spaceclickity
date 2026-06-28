@@ -1,27 +1,72 @@
 // Complexity tier ladder panel (VISUAL_SPEC §7). Buy / owned / locked states.
-// Scaffold renders the ladder read-only from tiers.ts; buy intents land in M3.
+// UI reads state & emits the unlock intent; sim/ owns the Energy math.
 
+import Decimal from "break_infinity.js";
 import { tiers } from "../data/tiers.ts";
+import { nextUnlockableTier, unlockTier } from "../sim/actions.ts";
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
+import { format } from "../util/format.ts";
+
+interface TierRow {
+  id: string;
+  status: HTMLElement;
+}
 
 export function mountTierPanel(parent: HTMLElement, store: Store<GameState>): void {
   const list = document.createElement("ul");
   list.className = "tier-list";
   parent.append(list);
 
+  const rows: TierRow[] = [];
+
+  for (const tier of tiers) {
+    const item = document.createElement("li");
+    item.className = "tier-row";
+
+    const label = document.createElement("span");
+    label.className = "tier-name";
+    label.textContent = `▸ ${tier.name}`;
+
+    const status = document.createElement("span");
+    status.className = "tier-status";
+
+    item.append(label, status);
+    list.append(item);
+    rows.push({ id: tier.id, status });
+  }
+
   store.subscribe((state) => {
-    list.innerHTML = "";
-    for (const tier of tiers) {
-      const owned = (state.tierLevels[tier.id] ?? 0) > 0;
-      const item = document.createElement("li");
-      item.className = `tier-row ${owned ? "is-owned" : "is-locked"}`;
-      item.textContent = `▸ ${tier.name}`;
-      const status = document.createElement("span");
-      status.className = "tier-status";
-      status.textContent = owned ? "✓" : "locked";
-      item.append(status);
-      list.append(item);
+    const next = nextUnlockableTier(state);
+    const notation = state.settings.notation;
+
+    for (const row of rows) {
+      const owned = (state.tierLevels[row.id] ?? 0) > 0;
+      const isNext = next !== undefined && next.id === row.id;
+      row.status.innerHTML = "";
+
+      const li = row.status.parentElement;
+      if (li !== null) {
+        li.className = `tier-row ${owned ? "is-owned" : isNext ? "is-next" : "is-locked"}`;
+      }
+
+      if (owned) {
+        row.status.textContent = "✓";
+        continue;
+      }
+      if (isNext) {
+        const cost = new Decimal(next.unlockCost);
+        const btn = document.createElement("button");
+        btn.className = "tier-buy";
+        btn.textContent = `unlock — ${format(cost, notation)}`;
+        btn.disabled = state.energy.lt(cost);
+        btn.addEventListener("click", () => {
+          store.update((s) => void unlockTier(s, row.id));
+        });
+        row.status.append(btn);
+        continue;
+      }
+      row.status.textContent = "locked";
     }
   });
 }

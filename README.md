@@ -39,5 +39,9 @@ emits intents. Game logic lives **only** in `sim/`. All tunable content lives in
 - **M2 (State + sim core)** ✅ — Energy taps, one idle generator with geometric
   cost + closed-form bulk buy, FPS-independent production, autosave + load.
   Verified end-to-end (tap → buy → idle accrual → persist → reload).
+- **M3 (Core loop)** ✅ — Complexity tier ladder (buy/owned/locked) from
+  `tiers.ts`, one generator per tier, derived **Scale** + **Negentropy** that
+  grow as you climb. Playable: tap → buy generators → unlock tiers → watch the
+  universe grow. Tier→fact-unlock wiring in place.
 
-Milestones 3–10 per `CLAUDE.md` build order.
+Milestones 4–10 per `CLAUDE.md` build order.

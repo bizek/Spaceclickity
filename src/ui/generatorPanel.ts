@@ -10,6 +10,7 @@ import { format } from "../util/format.ts";
 
 interface GeneratorRow {
   def: GeneratorDef;
+  container: HTMLElement;
   count: HTMLElement;
   buyOne: HTMLButtonElement;
   buyMax: HTMLButtonElement;
@@ -57,12 +58,17 @@ export function mountGeneratorPanel(parent: HTMLElement, store: Store<GameState>
     buttons.append(buyOne, buyMax);
     row.append(name, count, buttons);
     section.append(row);
-    rows.push({ def, count, buyOne, buyMax });
+    rows.push({ def, container: row, count, buyOne, buyMax });
   }
 
   store.subscribe((state) => {
     const notation = state.settings.notation;
     for (const row of rows) {
+      // Hide generators whose tier isn't unlocked yet.
+      const tierUnlocked = (state.tierLevels[row.def.requiresTier] ?? 0) > 0;
+      row.container.style.display = tierUnlocked ? "" : "none";
+      if (!tierUnlocked) continue;
+
       const owned = state.generators[row.def.id] ?? 0;
       const perUnit = new Decimal(row.def.baseProduction);
       row.count.textContent = `×${owned} · +${format(perUnit.mul(owned), notation)}/s`;

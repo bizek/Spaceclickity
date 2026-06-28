@@ -60,7 +60,8 @@ export function defaultGameState(): GameState {
     upgrades: {},
     prestigeUpgrades: {},
     cycle: 1,
-    unlockedFacts: [],
+    // Quantum foam is "reached" at the Big Bang, so its fact starts unlocked.
+    unlockedFacts: ["fact-quantum-foam"],
     settings: {
       quality: "high",
       reducedMotion: false,
