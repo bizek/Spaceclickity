@@ -3,7 +3,7 @@
 
 import Decimal from "break_infinity.js";
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface GameState {
   saveVersion: number;
@@ -39,6 +39,7 @@ export interface GameState {
     notation: "scientific" | "suffix";
     instability: boolean; // opt-in hard mode, off by default
     skipConsumeFX: boolean; // skip the devour animation after first viewing
+    sound: boolean; // subtle audio cues, off by default
   };
 
   // --- Bookkeeping ---
@@ -72,6 +73,7 @@ export function defaultGameState(): GameState {
       notation: "suffix",
       instability: false,
       skipConsumeFX: false,
+      sound: false,
     },
     lastSaved: Date.now(),
   };

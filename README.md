@@ -66,4 +66,8 @@ emits intents. Game logic lives **only** in `sim/`. All tunable content lives in
 - **M8 (Offline progress)** ✅ — timestamp catch-up on load at 100% efficiency,
   capped at 12h, with an eerie "the Attractor was patient" AFK summary popup.
 
-Milestones 9–10 (settings, leaderboard) per `CLAUDE.md` build order.
+- **M9 (Settings & a11y)** ✅ — settings modal: quality (live scene rebuild),
+  reduced-motion, number-format & sound toggles, skip-Consume-FX, instability
+  (opt-in), export/import save, and a confirm-gated reset. Save schema v3.
+
+Milestone 10 (leaderboard) per `CLAUDE.md` build order.

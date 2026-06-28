@@ -14,6 +14,12 @@ const migrations: Record<number, Migration> = {
     seenConsumeFX: save.seenConsumeFX ?? false,
     settings: { ...save.settings, skipConsumeFX: save.settings?.skipConsumeFX ?? false },
   }),
+  // 2 -> 3: add the sound setting (M9).
+  2: (save) => ({
+    ...save,
+    saveVersion: 3,
+    settings: { ...save.settings, sound: save.settings?.sound ?? false },
+  }),
 };
 
 export function runMigrations(save: SerializedGameState): SerializedGameState {

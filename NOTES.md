@@ -239,3 +239,29 @@ unlocked facts + 10 redacted entries with the correct tally.
   `setItem` is locked re-applies the grant each reload (lastSaved never persists),
   which inflated an intermediate reading during development. A single clean load
   grants exactly once (verified).
+
+## Milestone 9 — Settings & a11y
+
+**Status:** complete. Verified live: notation toggle reformats readouts
+(123.46M ↔ 1.23e8); quality change rebuilds the scene with no errors; sound +
+quality persist; export decodes to v3; v2→v3 migration backfills `sound`.
+
+### Pieces
+- `ui/settingsPanel.ts` — modal with quality (Low/Med/High), number format,
+  reduced-motion, sound, skip-Consume-FX, instability (opt-in) toggles, plus
+  export (copy string), import (paste → reload), and a two-click reset.
+- `main.ts` — binds `settings.sound` → `audio.setEnabled`; on `settings.quality`
+  change, `scene.stop()` + re-`initScene` (particle counts/bloom are init-time).
+  `scene` is held mutably; `requestConsume` reads the current instance.
+- `state/store.ts` — added `replace(next)` for import/reset.
+- Save schema **v3**: `settings.sound` (default off) + `migrations[2]` backfill.
+
+### Notes / deviations
+- Reduced-motion and notation apply live (read each frame / each subscribe);
+  quality requires a rebuild (counts are baked at init).
+- **Instability** toggle persists the flag but has no gameplay effect yet — the
+  hard-mode mechanic is intentionally future work (GAME_DESIGN §8: spec it, gate
+  it). Labeled "opt-in".
+- Import/reset use `location.reload()` after persisting so the scene and audio
+  re-init cleanly from the new state.
+- Settings persist immediately on change (`saveGame` in `setSetting`).

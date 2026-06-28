@@ -13,6 +13,7 @@ import { applyOfflineProgress } from "./sim/offline.ts";
 import { mountHud } from "./ui/hud.ts";
 import { notify } from "./ui/notifications.ts";
 import { format, formatDuration } from "./util/format.ts";
+import { audio } from "./services/audio.ts";
 
 function bootstrap(): void {
   const canvas = document.querySelector<HTMLCanvasElement>("#scene");
@@ -31,8 +32,25 @@ function bootstrap(): void {
   // SIMULATION — fixed-timestep, FPS-independent.
   startSimulation(store);
 
-  // RENDER — Three.js scene; reads state only.
-  const scene = initScene(canvas, store);
+  // RENDER — Three.js scene; reads state only. Held mutably so a quality change
+  // can rebuild it live (particle counts / bloom are set at init).
+  let scene = initScene(canvas, store);
+
+  // AUDIO — bind the sound setting to the cue service; react to changes.
+  audio.setEnabled(store.get().settings.sound);
+  let prevQuality = store.get().settings.quality;
+  let prevSound = store.get().settings.sound;
+  store.subscribe((state) => {
+    if (state.settings.sound !== prevSound) {
+      prevSound = state.settings.sound;
+      audio.setEnabled(prevSound);
+    }
+    if (state.settings.quality !== prevQuality) {
+      prevQuality = state.settings.quality;
+      scene.stop();
+      scene = initScene(canvas, store);
+    }
+  });
 
   // Consume intent: play the devour FX, then apply the prestige under cover of
   // the fade. Skippable after the first viewing if the player opts in.

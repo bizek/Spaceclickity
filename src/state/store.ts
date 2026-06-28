@@ -35,6 +35,12 @@ export class Store<T> {
     return () => this.listeners.delete(listener);
   }
 
+  /** Swap the entire state (e.g. import save / reset) and notify subscribers. */
+  replace(next: T): void {
+    this.state = next;
+    this.emit();
+  }
+
   /** Notify all subscribers without mutating (e.g. after a batch tick). */
   emit(): void {
     for (const listener of this.listeners) listener(this.state);

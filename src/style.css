@@ -420,6 +420,85 @@ body {
   font-style: italic;
 }
 
+/* --- Settings panel --- */
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.settings-label {
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.settings-segmented {
+  display: flex;
+  gap: 6px;
+}
+
+.seg {
+  background: rgba(20, 30, 44, 0.6);
+  border: 1px solid var(--panel-border);
+  color: var(--ink-dim);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.seg.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.settings-button {
+  align-self: flex-start;
+  background: rgba(20, 30, 44, 0.6);
+  border: 1px solid var(--panel-border);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.settings-button:hover {
+  border-color: var(--accent);
+}
+
+.settings-danger {
+  border-color: var(--consume);
+  color: var(--consume);
+}
+
+.settings-textarea {
+  width: 100%;
+  min-height: 64px;
+  resize: vertical;
+  background: #05070c;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: var(--ink-dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 8px;
+}
+
+.settings-status {
+  font-size: 11px;
+  color: var(--ink-dim);
+}
+
+.settings-divider {
+  border-top: 1px solid var(--panel-border);
+  margin: 8px 0 16px;
+}
+
 .hud-consume {
   grid-area: consume;
   align-self: end;

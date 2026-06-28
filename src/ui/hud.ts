@@ -15,6 +15,7 @@ import { mountPrestigeUpgradePanel } from "./prestigeUpgradePanel.ts";
 import { mountConsumeButton } from "./consumeButton.ts";
 import { mountCycleLog } from "./cycleLog.ts";
 import { mountNotifications } from "./notifications.ts";
+import { mountSettingsPanel } from "./settingsPanel.ts";
 import { comparisonIndexFor, comparisons } from "../data/comparisons.ts";
 import { audio } from "../services/audio.ts";
 
@@ -38,6 +39,8 @@ export function mountHud(
   const entityName = el("div", "hud-entity", "the Attractor");
   const settingsBtn = el("button", "hud-settings", "⚙");
   settingsBtn.setAttribute("aria-label", "Settings");
+  const settings = mountSettingsPanel(store);
+  settingsBtn.addEventListener("click", () => settings.open());
   topBar.append(entropyReadout, entityName, settingsBtn);
 
   // --- Center: tap-to-channel hit area over the canvas ---
