@@ -7,6 +7,7 @@ import { balance } from "../data/balance.ts";
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
 import { step } from "./production.ts";
+import { checkFactUnlocks } from "./unlocks.ts";
 
 export interface SimHandle {
   stop(): void;
@@ -25,7 +26,10 @@ export function startSimulation(store: Store<GameState>): SimHandle {
     let steps = 0;
     // Cap catch-up steps per wake so a long pause can't freeze the thread.
     while (accumulator >= balance.simTickMs && steps < 1000) {
-      store.update((state) => step(state, dtSeconds));
+      store.update((state) => {
+        step(state, dtSeconds);
+        checkFactUnlocks(state);
+      });
       accumulator -= balance.simTickMs;
       steps += 1;
     }

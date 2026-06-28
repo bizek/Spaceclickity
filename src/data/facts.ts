@@ -61,4 +61,36 @@ export const facts: readonly FactDef[] = [
     title: "It looks back",
     body: "The patterns inside have grown regular. For an instant, the glow seems to consider you.",
   },
+  // --- Scale-triggered (cold cosmology, then unsettling) ---
+  {
+    id: "fact-scale-light",
+    trigger: { kind: "scale-threshold", scale: 1e8 },
+    title: "Slow light",
+    body: "Light now takes so long to cross the universe that its near and far halves keep different time.",
+  },
+  {
+    id: "fact-scale-vast",
+    trigger: { kind: "scale-threshold", scale: 1e15 },
+    title: "Forgetting",
+    body: "The early regions have forgotten the late ones. Nothing inside can see the whole of itself. You can.",
+  },
+  // --- Cycle-triggered (the universes may, dimly, remember) ---
+  {
+    id: "fact-cycle-2",
+    trigger: { kind: "cycle-count", cycles: 2 },
+    title: "Again",
+    body: "The new universe settles into shapes subtly familiar — though nothing in it could remember the last.",
+  },
+  {
+    id: "fact-cycle-10",
+    trigger: { kind: "cycle-count", cycles: 10 },
+    title: "A pattern resembling a question",
+    body: "Ten universes fed. In the noise of the latest, briefly, an arrangement that looks like it is asking something.",
+  },
+  {
+    id: "fact-cycle-50",
+    trigger: { kind: "cycle-count", cycles: 50 },
+    title: "Patience",
+    body: "Fifty cycles. They come faster now, and smaller, and you are no fuller than when you began.",
+  },
 ];

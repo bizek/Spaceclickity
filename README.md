@@ -58,5 +58,9 @@ emits intents. Game logic lives **only** in `sim/`. All tunable content lives in
   spark. The Attractor grows each cycle. Skippable after first viewing (setting).
   Save schema v2 + migration.
 
-Milestones 7–10 (content, offline, settings, leaderboard) per `CLAUDE.md`
-build order.
+- **M7 (Content & juice)** ✅ — fact-unlock popups (tier/Scale/cycle-triggered),
+  Scale comparison strings + slide-in popups, a live comparison line, a clickable
+  re-readable cycle log (redacted until observed), and sound hooks (subtle WebAudio
+  cues, off by default).
+
+Milestones 8–10 (offline, settings, leaderboard) per `CLAUDE.md` build order.

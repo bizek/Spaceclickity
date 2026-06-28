@@ -14,6 +14,9 @@ import { mountUpgradePanel } from "./upgradePanel.ts";
 import { mountPrestigeUpgradePanel } from "./prestigeUpgradePanel.ts";
 import { mountConsumeButton } from "./consumeButton.ts";
 import { mountCycleLog } from "./cycleLog.ts";
+import { mountNotifications } from "./notifications.ts";
+import { comparisonIndexFor, comparisons } from "../data/comparisons.ts";
+import { audio } from "../services/audio.ts";
 
 function el(tag: string, className: string, text?: string): HTMLElement {
   const node = document.createElement(tag);
@@ -65,6 +68,8 @@ export function mountHud(
     negV,
   );
   rightPanel.append(readout);
+  const comparisonLine = el("p", "hud-comparison");
+  rightPanel.append(comparisonLine);
   mountGeneratorPanel(rightPanel, store);
   mountUpgradePanel(rightPanel, store);
   mountPrestigeUpgradePanel(rightPanel, store);
@@ -86,21 +91,26 @@ export function mountHud(
     consumeArea,
   );
 
+  // Quiet slide-in popups for fact unlocks + Scale comparisons.
+  mountNotifications(store);
+
   // Reactive bindings for the live readouts.
   store.subscribe((state) => {
     const notation = state.settings.notation;
+    const scale = deriveScale(state as GameState);
     entropyReadout.textContent = `ENTROPY: ${format(state.entropy, notation)}`;
     energyV.textContent = format(state.energy, notation);
     rateV.textContent = format(energyPerSecond(state as GameState), notation);
-    scaleV.textContent = format(deriveScale(state as GameState), notation);
-    negV.textContent = format(
-      deriveNegentropy(state as GameState),
-      notation,
-    );
+    scaleV.textContent = format(scale, notation);
+    negV.textContent = format(deriveNegentropy(state as GameState), notation);
+
+    const ci = comparisonIndexFor(scale.toNumber());
+    comparisonLine.textContent = ci >= 0 ? (comparisons[ci]?.text ?? "") : "";
   });
 
   // Tap-to-channel: emit the tap intent; sim/ owns the actual Energy math.
   tapArea.addEventListener("click", () => {
     store.update((state) => tap(state));
+    audio.cue("tap");
   });
 }

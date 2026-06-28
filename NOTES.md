@@ -182,3 +182,34 @@ update for that span and hands control back cleanly at the end.
 - **Save schema v2:** added `seenConsumeFX` and `settings.skipConsumeFX`;
   `migrations[1]` backfills both. Confirmed old v1 saves load fine.
 - Consume now also saves immediately (key event) in addition to the interval.
+
+## Milestone 7 — Content & juice
+
+**Status:** complete. Verified live: unlocking Particles fired a fact popup
+("First matter") + a Scale comparison popup ("spans a single atom"), the
+comparison line updated, facts counter 2/12, and the cycle log opened showing
+unlocked facts + 10 redacted entries with the correct tally.
+
+### Pieces
+- `data/comparisons.ts` — log-spaced Scale comparison strings (escalating →
+  unsettling) + `comparisonIndexFor(scale)`.
+- `data/facts.ts` — added Scale-threshold and cycle-count facts (the eerie "they
+  remember" flavor). 12 facts total.
+- `sim/unlocks.ts` — `checkFactUnlocks(state)` evaluates every fact trigger
+  (tier/scale/cycle) each tick and appends newly met ids. Centralizes unlocking;
+  removed the ad-hoc push from `unlockTier`.
+- `ui/notifications.ts` — watches `unlockedFacts` growth + Scale comparison index,
+  shows dismissible auto-fading slide-in popups, fires sound cues. Baselines from
+  loaded state so it never spams on load.
+- `ui/cycleLog.ts` — the label is now a button opening a modal log: consumed-count
+  tally, current comparison, and all facts in canonical order (redacted until
+  observed, re-readable after).
+- `services/audio.ts` — `audio.cue(tap|unlock|milestone|consume)`; tiny WebAudio
+  synth (low drones, sub-bass on Consume, high glints on milestones). Disabled by
+  default; lazily creates `AudioContext` on first cue after a gesture. The settings
+  toggle lands in M9.
+
+### Notes
+- Per-run upgrades (`data/upgrades.ts`) still intentionally empty (optional content).
+- Audio default-off means the cue paths are exercised only once enabled; verified
+  the hook call sites, not audible output.

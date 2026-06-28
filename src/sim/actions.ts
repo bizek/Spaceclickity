@@ -95,10 +95,6 @@ export function unlockTier(state: GameState, tierId: string): boolean {
 
   state.energy = state.energy.sub(cost);
   state.tierLevels[tierId] = 1;
-
-  // Reaching a tier reveals its fact-unlock (popups arrive in M7).
-  if (!state.unlockedFacts.includes(next.factId)) {
-    state.unlockedFacts.push(next.factId);
-  }
+  // The tier's fact-unlock is recorded by checkFactUnlocks() on the next tick.
   return true;
 }
