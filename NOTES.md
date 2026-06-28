@@ -316,8 +316,16 @@ expensive bloom pass at up to 2× pixel density. Fixes (all in `render/`):
   Fill-rate scales with the square of this, so this is the biggest high-DPI win.
 - **Bloom at reduced resolution** — render targets at 0.6× (high) / 0.5× (others)
   of canvas. Bloom is blurry anyway; visually ~identical, much cheaper.
-- **Fewer particles** — universe 1800/1000/400 (was 3000/1500/600); starfields
-  trimmed. Cuts additive-blend overdraw.
+- **Particle counts** — kept Low/Med lighter; High restored to a rich density
+  (universe 3200, starfields 1700/850/280) after the real cause turned out to be
+  Brave's hardware acceleration, not the workload. Capable hardware gets the lush
+  look; Low/Med remain the lighter fallbacks.
+
+> Root cause of the original report: **Brave with hardware acceleration off**
+> (software WebGL) — brutal when the canvas is maximized on a 1440p display, and it
+> starved other Brave tabs. Chrome (HW accel on) runs it buttery smooth. The render
+> optimizations above are still net-positive (the FPS cap notably reduces the
+> GPU contention that was slowing other tabs).
 
 Also switched **the launcher to serve the production build** (`npm run build` then
 `npm run preview --port 5173 --open`) instead of the dev server — lighter JS, no
