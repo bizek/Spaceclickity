@@ -58,7 +58,7 @@ function era(
   };
 }
 
-const PARTICLE_COUNTS = { low: 600, medium: 1500, high: 3000 } as const;
+const PARTICLE_COUNTS = { low: 400, medium: 1000, high: 1800 } as const;
 
 function currentEra(state: GameState): EraVisual {
   let key: TierVisualKey = "quantum-foam";

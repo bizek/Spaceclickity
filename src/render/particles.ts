@@ -22,7 +22,7 @@ interface Layer {
   spin: number;
 }
 
-const LAYER_COUNTS = { low: [400, 200, 80], medium: [900, 450, 150], high: [1600, 800, 250] } as const;
+const LAYER_COUNTS = { low: [300, 150, 60], medium: [600, 300, 110], high: [1000, 500, 160] } as const;
 const LAYER_SPECS = [
   { dist: 80, size: 0.5, parallax: 0.2, spin: 0.003, color: "#9fb4d8" }, // far
   { dist: 50, size: 0.7, parallax: 0.5, spin: 0.006, color: "#bcd0ff" }, // mid

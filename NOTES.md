@@ -301,3 +301,28 @@ Outstanding follow-ups for the audit (all noted above):
 - Optional: per-run upgrades (`data/upgrades.ts` is an empty, wired stub).
 - Optional: instability hard-mode mechanic (toggle persists; no gameplay effect yet).
 - Optional: networked leaderboard; nebula fBm shader; code-splitting the Three.js chunk.
+
+## Performance pass (post-M10)
+
+User reported poor performance. The render loop was uncapped (measured 165 FPS in
+preview) — on high-DPI displays / integrated GPUs that pegs the GPU running an
+expensive bloom pass at up to 2× pixel density. Fixes (all in `render/`):
+
+- **Frame-rate cap at 60 FPS** (`scene.ts`) — `composer.render()` is gated by a
+  timestamp; rAF still fires at vsync but skipped frames just early-return. ~64%
+  fewer GPU renders on a 165 Hz display; dt/elapsed advance only on rendered frames
+  so animation speed is unchanged.
+- **Pixel-ratio cap per quality** — low 1, medium 1.25, high 1.5 (was up to 2).
+  Fill-rate scales with the square of this, so this is the biggest high-DPI win.
+- **Bloom at reduced resolution** — render targets at 0.6× (high) / 0.5× (others)
+  of canvas. Bloom is blurry anyway; visually ~identical, much cheaper.
+- **Fewer particles** — universe 1800/1000/400 (was 3000/1500/600); starfields
+  trimmed. Cuts additive-blend overdraw.
+
+Also switched **the launcher to serve the production build** (`npm run build` then
+`npm run preview --port 5173 --open`) instead of the dev server — lighter JS, no
+HMR overhead, faster load. Same port 5173 so localStorage saves carry over.
+
+Verified: scene still renders correctly after trims; production preview serves 200.
+If still heavy on the user's machine, Settings → Quality → Low (PR 1, fewest
+particles, weakest bloom) is the fallback.

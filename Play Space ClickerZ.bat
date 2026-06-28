@@ -18,6 +18,15 @@ if not exist node_modules\ (
   )
 )
 echo.
+echo Building the optimized version ^(first launch and after updates^)...
+call npm run build
+if errorlevel 1 (
+  echo.
+  echo Build failed. See the messages above.
+  pause
+  exit /b 1
+)
+echo.
 echo ============================================
 echo   Space ClickerZ is starting...
 echo   A browser tab will open automatically.
@@ -26,7 +35,7 @@ echo   Keep THIS window open while you play.
 echo   Close it ^(or press Ctrl+C^) to stop the game.
 echo ============================================
 echo.
-call npm run dev -- --open
+call npm run preview -- --port 5173 --open
 echo.
 echo Server stopped.
 pause

@@ -34,6 +34,16 @@ const BLOOM_BY_QUALITY = {
   high: { strength: 1.0, radius: 0.5 },
 } as const;
 
+const PIXEL_RATIO_BY_QUALITY = {
+  low: 1,
+  medium: 1.25,
+  high: 1.5,
+} as const;
+
+/** Render cap; an idle game has no need to run above this. */
+const TARGET_FPS = 60;
+const FRAME_INTERVAL_MS = 1000 / TARGET_FPS;
+
 export function initScene(
   canvas: HTMLCanvasElement,
   store: Store<GameState>,
@@ -42,7 +52,12 @@ export function initScene(
   const reducedMotionInitial = store.get().settings.reducedMotion;
 
   const renderer = new WebGLRenderer({ canvas, antialias: quality !== "low", powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, quality === "high" ? 2 : 1.5));
+  // Cap device pixel ratio: bloom + additive particles are fill-rate bound, so on
+  // high-DPI displays rendering at 2x can quadruple GPU cost for little gain.
+  const maxPixelRatio = PIXEL_RATIO_BY_QUALITY[quality];
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+  // Bloom is blurry by nature, so it can render at a fraction of canvas res.
+  const bloomScale = quality === "high" ? 0.6 : 0.5;
 
   const scene = new Scene();
   scene.background = new Color(0x05060a);
@@ -73,7 +88,7 @@ export function initScene(
     const h = window.innerHeight;
     renderer.setSize(w, h, false);
     composer.setSize(w, h);
-    bloom.setSize(w, h);
+    bloom.setSize(Math.round(w * bloomScale), Math.round(h * bloomScale));
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
@@ -85,9 +100,16 @@ export function initScene(
 
   let raf = 0;
   let last = performance.now();
+  let lastRender = last;
   let elapsed = 0;
 
   function frame(now: number): void {
+    raf = requestAnimationFrame(frame);
+
+    // Throttle to TARGET_FPS — caps GPU work (and heat/fan) on fast displays.
+    if (now - lastRender < FRAME_INTERVAL_MS - 0.5) return;
+    lastRender = now;
+
     const dt = Math.min((now - last) / 1000, 0.1);
     last = now;
     elapsed += dt;
@@ -114,7 +136,6 @@ export function initScene(
     attractor.update(state, dt);
 
     composer.render();
-    raf = requestAnimationFrame(frame);
   }
   raf = requestAnimationFrame(frame);
 
