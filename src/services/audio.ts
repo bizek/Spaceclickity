@@ -6,7 +6,7 @@
 // `setEnabled`. The AudioContext is created lazily on the first cue after a user
 // gesture, to satisfy browser autoplay policies.
 
-export type Cue = "tap" | "unlock" | "milestone" | "consume";
+export type Cue = "tap" | "unlock" | "milestone" | "consume" | "panel" | "node";
 
 class AudioService {
   private ctx: AudioContext | null = null;
@@ -36,6 +36,12 @@ class AudioService {
         break;
       case "consume":
         this.blip(ctx, 55, 1.2, 0.22, "sine"); // sub-bass swell
+        break;
+      case "panel":
+        this.blip(ctx, 240, 0.05, 0.03, "triangle"); // subtle collapse/expand
+        break;
+      case "node":
+        this.blip(ctx, 480, 0.06, 0.04, "triangle"); // subtle node purchase
         break;
     }
   }

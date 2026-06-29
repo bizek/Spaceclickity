@@ -9,9 +9,13 @@ export type TierVisualKey =
   | "quantum-foam"
   | "particles"
   | "atoms"
+  | "molecules"
+  | "nebulae"
   | "stars"
   | "galaxies"
+  | "clusters"
   | "life"
+  | "civilization"
   | "unknown";
 
 export interface TierDef {
@@ -59,47 +63,87 @@ export const tiers: readonly TierDef[] = [
     name: "Atoms",
     unlockCost: 1e4,
     energyMult: 4,
-    negentropyWeight: 60,
+    negentropyWeight: 55,
     scaleContribution: 1e2,
     visualKey: "atoms",
     factId: "fact-atoms",
+  },
+  {
+    id: "molecules",
+    name: "Molecules",
+    unlockCost: 5e4,
+    energyMult: 6,
+    negentropyWeight: 150,
+    scaleContribution: 5e2,
+    visualKey: "molecules",
+    factId: "fact-molecules",
+  },
+  {
+    id: "nebulae",
+    name: "Nebulae",
+    unlockCost: 2e5,
+    energyMult: 8,
+    negentropyWeight: 400,
+    scaleContribution: 2e3,
+    visualKey: "nebulae",
+    factId: "fact-nebulae",
   },
   {
     id: "stars",
     name: "Stars",
     unlockCost: 1e6,
     energyMult: 10,
-    negentropyWeight: 500,
+    negentropyWeight: 1_000,
     scaleContribution: 1e4,
     visualKey: "stars",
     factId: "fact-stars",
   },
   {
     id: "galaxies",
-    name: "Galaxies",
+    name: "Galactic Disk",
     unlockCost: 1e9,
     energyMult: 25,
-    negentropyWeight: 4_000,
+    negentropyWeight: 3_000,
     scaleContribution: 1e7,
     visualKey: "galaxies",
     factId: "fact-galaxies",
+  },
+  {
+    id: "clusters",
+    name: "Globular Clusters",
+    unlockCost: 1e11,
+    energyMult: 50,
+    negentropyWeight: 9_000,
+    scaleContribution: 1e8,
+    visualKey: "clusters",
+    factId: "fact-clusters",
   },
   {
     id: "life",
     name: "Life",
     unlockCost: 1e13,
     energyMult: 100,
-    negentropyWeight: 50_000, // deliberate spike
+    negentropyWeight: 65_000, // deliberate spike
     scaleContribution: 1e9,
     visualKey: "life",
     factId: "fact-life",
+  },
+  {
+    id: "civilization",
+    name: "Civilization",
+    unlockCost: 3e15,
+    energyMult: 250,
+    negentropyWeight: 200_000,
+    scaleContribution: 3e10,
+    visualKey: "civilization",
+    factId: "fact-civilization",
   },
   {
     id: "unknown",
     name: "???",
     unlockCost: 1e18,
     energyMult: 500,
-    negentropyWeight: 500_000, // horror payoff
+    negentropyWeight: 1_400_000, // horror payoff
     scaleContribution: 1e12,
     visualKey: "unknown",
     factId: "fact-unknown",

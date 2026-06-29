@@ -6,6 +6,11 @@ import Decimal from "break_infinity.js";
 import { balance } from "../data/balance.ts";
 import type { GameState } from "../state/schema.ts";
 import { energyPerSecond } from "./production.ts";
+import { offlineCapHoursBonus, offlineEfficiencyBonus } from "./disciplines.ts";
+import { galaxyOfflineEfficiencyBonus } from "./galaxies.ts";
+
+/** Hard ceiling on offline efficiency so AFK can't run away (balance guard). */
+const MAX_OFFLINE_EFFICIENCY = 2.0;
 
 export interface OfflineResult {
   /** Elapsed time credited (after the cap), in seconds. */
@@ -29,14 +34,21 @@ export function applyOfflineProgress(
   state.lastSaved = now;
   if (elapsed < 1) return null;
 
-  const cap = balance.offline.capHours * 3600;
+  // Time-tree nodes extend the cap and the efficiency.
+  const cap = (balance.offline.capHours + offlineCapHoursBonus(state)) * 3600;
   const seconds = Math.min(elapsed, cap);
   const capped = elapsed > cap;
 
   const rate = energyPerSecond(state);
   if (rate.lte(0)) return null;
 
-  const gained = rate.mul(seconds).mul(balance.offline.efficiency);
+  const efficiency = Math.min(
+    balance.offline.efficiency +
+      offlineEfficiencyBonus(state) +
+      galaxyOfflineEfficiencyBonus(state),
+    MAX_OFFLINE_EFFICIENCY,
+  );
+  const gained = rate.mul(seconds).mul(efficiency);
   state.energy = state.energy.add(gained);
   return { seconds, gained, capped };
 }

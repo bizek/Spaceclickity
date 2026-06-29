@@ -2,8 +2,9 @@
 // Runtime currencies are break_infinity Decimals; serialized as strings.
 
 import Decimal from "break_infinity.js";
+import { starterGalaxy, type GalaxyState } from "../data/galaxies.ts";
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 7;
 
 export interface GameState {
   saveVersion: number;
@@ -19,14 +20,29 @@ export interface GameState {
   tierLevels: Record<string, number>;
   /** Generator id -> count owned. */
   generators: Record<string, number>;
+  /**
+   * Per-run generator pip-upgrades (P3a): source id -> track id -> pip count.
+   * Bought with Energy; cleared on Consume alongside `generators`.
+   */
+  generatorUpgrades: Record<string, Record<string, number>>;
   /** Upgrade id -> level owned (per-run). */
   upgrades: Record<string, number>;
-  /** Prestige upgrade id -> level owned (permanent). */
+  /**
+   * Legacy permanent upgrades (pre-v4). Superseded by `disciplines`; the v3→v4
+   * migration empties it. Kept on the type for rollback safety.
+   */
   prestigeUpgrades: Record<string, number>;
+  /** Discipline node id -> level owned (permanent, Entropy-bought). */
+  disciplines: Record<string, number>;
 
   // --- Meta progression ---
-  /** How many universes the Attractor has consumed. */
+  /** How many galaxies the Attractor has consumed. */
   cycle: number;
+  /**
+   * The galaxy this run is growing toward Consume (archetype + real name).
+   * PERSISTS through the per-run reset and ADVANCES on Consume (Galaxy Rescope G2).
+   */
+  galaxy: GalaxyState;
   /** Fact ids the player has unlocked. */
   unlockedFacts: string[];
   /** Whether the player has watched at least one full Consume animation. */
@@ -61,9 +77,12 @@ export function defaultGameState(): GameState {
     entropy: new Decimal(0),
     tierLevels: { "quantum-foam": 1 },
     generators: {},
+    generatorUpgrades: {},
     upgrades: {},
     prestigeUpgrades: {},
+    disciplines: {},
     cycle: 1,
+    galaxy: starterGalaxy(),
     // Quantum foam is "reached" at the Big Bang, so its fact starts unlocked.
     unlockedFacts: ["fact-quantum-foam"],
     seenConsumeFX: false,

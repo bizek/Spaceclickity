@@ -29,13 +29,25 @@ export const facts: readonly FactDef[] = [
     id: "fact-particles",
     trigger: { kind: "tier-reached", tierId: "particles" },
     title: "First matter",
-    body: "Quarks bind into the first hadrons. The universe now has a temperature.",
+    body: "Quarks bind into the first hadrons. The void now has a temperature.",
   },
   {
     id: "fact-atoms",
     trigger: { kind: "tier-reached", tierId: "atoms" },
     title: "Recombination",
     body: "Electrons settle into orbit. The fog clears; light travels freely for the first time.",
+  },
+  {
+    id: "fact-molecules",
+    trigger: { kind: "tier-reached", tierId: "molecules" },
+    title: "First bonds",
+    body: "Atoms find one another in the cold and hold. Chemistry begins, indifferent to its uses.",
+  },
+  {
+    id: "fact-nebulae",
+    trigger: { kind: "tier-reached", tierId: "nebulae" },
+    title: "Cradle",
+    body: "Gas and dust pool into vast dim clouds — wombs that do not yet know what they will bear.",
   },
   {
     id: "fact-stars",
@@ -46,14 +58,26 @@ export const facts: readonly FactDef[] = [
   {
     id: "fact-galaxies",
     trigger: { kind: "tier-reached", tierId: "galaxies" },
-    title: "Structure",
-    body: "Matter gathers along the cosmic web. Islands of light drift in widening dark.",
+    title: "The disc",
+    body: "Stars coalesce into a spinning plane. Arms reach outward through cold gas and ancient dark.",
+  },
+  {
+    id: "fact-clusters",
+    trigger: { kind: "tier-reached", tierId: "clusters" },
+    title: "Halo",
+    body: "Spheres of ancient stars hang in the halo — each older than the disc itself. They carry no record of what built them.",
   },
   {
     id: "fact-life",
     trigger: { kind: "tier-reached", tierId: "life" },
     title: "Something stirs",
     body: "On a warm world, chemistry begins to copy itself. It does not know it is being grown.",
+  },
+  {
+    id: "fact-civilization",
+    trigger: { kind: "tier-reached", tierId: "civilization" },
+    title: "Lights in the dark",
+    body: "The glow organizes. Minds spread across the worlds, lighting them in deliberate rows. None looks up far enough.",
   },
   {
     id: "fact-unknown",
@@ -66,7 +90,7 @@ export const facts: readonly FactDef[] = [
     id: "fact-scale-light",
     trigger: { kind: "scale-threshold", scale: 1e8 },
     title: "Slow light",
-    body: "Light now takes so long to cross the universe that its near and far halves keep different time.",
+    body: "Light now takes so long to cross the galaxy that its near and far halves keep different time.",
   },
   {
     id: "fact-scale-vast",
@@ -74,18 +98,18 @@ export const facts: readonly FactDef[] = [
     title: "Forgetting",
     body: "The early regions have forgotten the late ones. Nothing inside can see the whole of itself. You can.",
   },
-  // --- Cycle-triggered (the universes may, dimly, remember) ---
+  // --- Cycle-triggered (the galaxies may, dimly, remember) ---
   {
     id: "fact-cycle-2",
     trigger: { kind: "cycle-count", cycles: 2 },
     title: "Again",
-    body: "The new universe settles into shapes subtly familiar — though nothing in it could remember the last.",
+    body: "The new galaxy settles into shapes subtly familiar — though nothing in it could remember the last.",
   },
   {
     id: "fact-cycle-10",
     trigger: { kind: "cycle-count", cycles: 10 },
     title: "A pattern resembling a question",
-    body: "Ten universes fed. In the noise of the latest, briefly, an arrangement that looks like it is asking something.",
+    body: "Ten galaxies consumed. In the noise of the latest, briefly, an arrangement that looks like it is asking something.",
   },
   {
     id: "fact-cycle-50",

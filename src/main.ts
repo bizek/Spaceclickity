@@ -3,6 +3,7 @@
 
 import "./style.css";
 import { balance } from "./data/balance.ts";
+import { getArchetype } from "./data/galaxies.ts";
 import { Store } from "./state/store.ts";
 import type { GameState } from "./state/schema.ts";
 import { loadGame, saveGame } from "./util/save.ts";
@@ -67,6 +68,10 @@ function bootstrap(): void {
       });
       saveGame(store.get() as GameState); // persist on this key event
       void leaderboard.submitScore(store.get().entropy.toString());
+      // Surface the next target galaxy the Attractor now drifts toward.
+      const next = store.get().galaxy;
+      const arch = getArchetype(next.archetypeId);
+      notify("NEW TARGET", next.name, `${arch.morphologyName}. ${arch.modifier.label}`);
     }, skip);
   }
 
@@ -80,7 +85,7 @@ function bootstrap(): void {
     notify(
       "AFK",
       "The Attractor was patient",
-      `Away ${formatDuration(offline.seconds)}. The universe yielded ${format(offline.gained, notation)} Energy${tail}.`,
+      `Away ${formatDuration(offline.seconds)}. The galaxy yielded ${format(offline.gained, notation)} Energy${tail}.`,
     );
   }
 

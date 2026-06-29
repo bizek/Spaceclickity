@@ -7,6 +7,7 @@ import { balance } from "../data/balance.ts";
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
 import { step } from "./production.ts";
+import { autoBuyCheapest } from "./actions.ts";
 import { checkFactUnlocks } from "./unlocks.ts";
 
 export interface SimHandle {
@@ -28,6 +29,7 @@ export function startSimulation(store: Store<GameState>): SimHandle {
     while (accumulator >= balance.simTickMs && steps < 1000) {
       store.update((state) => {
         step(state, dtSeconds);
+        autoBuyCheapest(state);
         checkFactUnlocks(state);
       });
       accumulator -= balance.simTickMs;

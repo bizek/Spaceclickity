@@ -26,7 +26,7 @@ export function mountConsumeButton(
     const gain = previewEntropyGain(state as GameState);
     const ripe = gain.gt(0);
     btn.disabled = !ripe;
-    btn.textContent = "◇ CONSUME UNIVERSE";
+    btn.textContent = `◇ CONSUME — ${state.galaxy.name}`;
     gainLine.textContent = ripe
       ? `+${format(gain, state.settings.notation)} Entropy`
       : "nothing ripe to consume";

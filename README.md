@@ -1,7 +1,7 @@
 # Space ClickerZ — *the Attractor*
 
 An eerie cosmic-horror **idle/incremental** browser game (Chromium, semi-3D).
-You are **the Attractor**: grow a universe from a spark, cultivate matter →
+You are **the Attractor**: grow a galaxy from a spark, cultivate matter →
 stars → life (raising **Negentropy**), then **Consume** it for permanent
 **Entropy** (prestige + leaderboard score). Calm, AFK-friendly; the horror lives
 in flavor and visuals, never in punishing difficulty.

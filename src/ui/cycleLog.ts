@@ -2,8 +2,10 @@
 // (GAME_DESIGN §9, VISUAL_SPEC §7). A quiet running tally of consumed universes.
 
 import { comparisonIndexFor, comparisons } from "../data/comparisons.ts";
-import { facts } from "../data/facts.ts";
+import { facts, type FactDef } from "../data/facts.ts";
+import { tiers } from "../data/tiers.ts";
 import { deriveScale } from "../sim/derive.ts";
+import { hasUnlock } from "../sim/disciplines.ts";
 import { leaderboard } from "../services/leaderboard.ts";
 import type { Store } from "../state/store.ts";
 import type { GameState } from "../state/schema.ts";
@@ -69,7 +71,7 @@ function buildLogOverlay(store: Store<GameState>): {
 
     const tally = document.createElement("p");
     tally.className = "log-tally";
-    tally.textContent = `Universes consumed: ${state.cycle - 1}. Currently growing cycle ${state.cycle}.`;
+    tally.textContent = `Galaxies consumed: ${state.cycle - 1}. Currently growing cycle ${state.cycle}.`;
     panel.append(tally);
 
     // Standing — total Entropy (the Attractor's vastness). Local leaderboard.
@@ -105,9 +107,14 @@ function buildLogOverlay(store: Store<GameState>): {
       t.textContent = unlocked ? fact.title : "— — —";
       const b = document.createElement("div");
       b.className = "log-fact-body";
+      // Echoes (factHint) surfaces how to reach each unobserved fact.
+      const hinting = !unlocked && hasUnlock(state as GameState, "factHint");
       b.textContent = unlocked
         ? fact.body
-        : "Not yet observed.";
+        : hinting
+          ? factHintText(fact, state.settings.notation)
+          : "Not yet observed.";
+      if (hinting) entry.classList.add("is-hinted");
       entry.append(t, b);
       list.append(entry);
     }
@@ -115,4 +122,19 @@ function buildLogOverlay(store: Store<GameState>): {
   }
 
   return { root, open };
+}
+
+/** A discreet hint at how an unobserved fact is triggered (Mind: Echoes). */
+function factHintText(fact: FactDef, notation: GameState["settings"]["notation"]): string {
+  switch (fact.trigger.kind) {
+    case "tier-reached": {
+      const tierId = fact.trigger.tierId;
+      const name = tiers.find((t) => t.id === tierId)?.name;
+      return `Echo: reach the ${name ?? "next"} tier.`;
+    }
+    case "scale-threshold":
+      return `Echo: grow Scale beyond ${format(new Decimal(fact.trigger.scale), notation)}.`;
+    case "cycle-count":
+      return `Echo: consume ${fact.trigger.cycles} galaxies.`;
+  }
 }

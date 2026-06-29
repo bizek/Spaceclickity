@@ -3,6 +3,8 @@
 // panel. Pure presentation — owns no game state; collapse is a UI preference
 // persisted to its own localStorage key (GameState stays sim-only until v4/E3).
 
+import { audio } from "../../services/audio.ts";
+
 const COLLAPSE_KEY = "console.panels.v1";
 
 function loadCollapsed(): Record<string, boolean> {
@@ -85,6 +87,7 @@ export function createPanel(opts: PanelOptions): PanelHandle {
       const map = loadCollapsed();
       map[opts.id] = collapsed;
       saveCollapsed(map);
+      audio.cue("panel");
       sync();
     });
     sync();

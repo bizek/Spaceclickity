@@ -6,8 +6,14 @@
 import type { Store } from "../../state/store.ts";
 import type { GameState } from "../../state/schema.ts";
 
-/** Build the chrome layer and bind its intensity to settings. Returns the root. */
-export function mountConsoleFrame(store: Store<GameState>): HTMLElement {
+export interface ConsoleFrame {
+  frame: HTMLElement;
+  /** One-line type-on status for the boot sequence; hidden by default. */
+  statusEl: HTMLElement;
+}
+
+/** Build the chrome layer and bind its intensity to settings. Returns frame + statusEl. */
+export function mountConsoleFrame(store: Store<GameState>): ConsoleFrame {
   const frame = document.createElement("div");
   frame.className = "console-frame";
   frame.setAttribute("aria-hidden", "true");
@@ -18,7 +24,12 @@ export function mountConsoleFrame(store: Store<GameState>): HTMLElement {
   const scan = document.createElement("div");
   scan.className = "cf-scan";
 
-  frame.append(grid, scan);
+  // Boot-sequence status line — bottom-left, above the corner bracket.
+  const statusEl = document.createElement("div");
+  statusEl.className = "cf-status";
+  statusEl.hidden = true;
+
+  frame.append(grid, scan, statusEl);
   for (const corner of ["tl", "tr", "bl", "br"]) {
     const c = document.createElement("div");
     c.className = `cf-corner cf-${corner}`;
@@ -40,5 +51,5 @@ export function mountConsoleFrame(store: Store<GameState>): HTMLElement {
     }
   });
 
-  return frame;
+  return { frame, statusEl };
 }

@@ -10,6 +10,9 @@ import { generators } from "../data/generators.ts";
 import { tiers } from "../data/tiers.ts";
 import type { GameState } from "../state/schema.ts";
 import { prestigeEnergyMultiplier } from "./prestige.ts";
+import { tickRateMultiplier, tierEnergyMultiplier } from "./disciplines.ts";
+import { galaxyProductionMultiplier } from "./galaxies.ts";
+import { sourceRateMultiplier } from "./generatorUpgrades.ts";
 
 /** Product of energyMult across every owned tier. Forward-compatible with M3. */
 export function tierMultiplier(state: GameState): Decimal {
@@ -28,12 +31,20 @@ export function energyPerSecond(state: GameState): Decimal {
   for (const def of generators) {
     const count = state.generators[def.id] ?? 0;
     if (count <= 0) continue;
-    perUnitTotal = perUnitTotal.add(new Decimal(def.baseProduction).mul(count));
+    // Per-generator tier bonus (e.g. Stellar Forge: Stars+ produce ×2) and this
+    // source's per-run Rate pip-upgrades.
+    const contribution = new Decimal(def.baseProduction)
+      .mul(count)
+      .mul(tierEnergyMultiplier(state, def.requiresTier))
+      .mul(sourceRateMultiplier(state, def.id));
+    perUnitTotal = perUnitTotal.add(contribution);
   }
   if (perUnitTotal.eq(0)) return perUnitTotal;
   return perUnitTotal
     .mul(tierMultiplier(state))
-    .mul(prestigeEnergyMultiplier(state));
+    .mul(prestigeEnergyMultiplier(state))
+    .mul(tickRateMultiplier(state))
+    .mul(galaxyProductionMultiplier(state));
 }
 
 /**
